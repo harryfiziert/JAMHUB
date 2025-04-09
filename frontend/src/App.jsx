@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Register from "./components/Register";
+import Login from "./components/Login";
+import Profile from "./components/Profile";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
             <Route path="/settings" element={<div>Settings Page</div>} />
             <Route path="/logout" element={<div>Logout</div>} />
             <Route path="/register" element={<Register />} /> {/* <== HIER KORREKT */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </div>
       </div>
