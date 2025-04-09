@@ -1,30 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { auth } from "../Firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    // Listen to auth changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
       setUser(currentUser);
-    });
 
-    // Cleanup
-    return () => unsubscribe();
+      // Hole Profildaten vom Backend
+      fetch(`http://localhost:8000/user/${currentUser.uid}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setUserData(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching profile:", error);
+        });
+    }
   }, []);
 
   return (
     <div>
       <h2>Profile</h2>
-      {user ? (
+      {user && userData ? (
         <div>
-          <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>User ID:</strong> {user.uid}</p>
+          <p><strong>Email:</strong> {userData.email}</p>
+          <p><strong>Username:</strong> {userData.username}</p>
+          <p><strong>University:</strong> {userData.university}</p>
+          <p><strong>UID:</strong> {userData.uid}</p>
         </div>
       ) : (
-        <p>No user is currently logged in.</p>
+        <p>Loading user profile...</p>
       )}
     </div>
   );
