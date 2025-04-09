@@ -8,7 +8,7 @@ function App() {
     <Router>
       <div style={{ display: "flex" }}>
         <Sidebar />
-        <div style={{ marginLeft: "250px", padding: "20px" }}>
+        <div style={{ marginLeft: "250px", padding: "20px", flexGrow: 1 }}>
           <Routes>
             <Route path="/dashboard" element={<div>Dashboard Page</div>} />
             <Route path="/flashcards" element={<div>Flashcards Page</div>} />

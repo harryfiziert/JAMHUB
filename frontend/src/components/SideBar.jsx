@@ -30,9 +30,7 @@ const styles = {
     backgroundColor: "#1e1e2f",
     color: "white",
     padding: "20px",
-    position: "fixed",
-    top: 0,
-    left: 0,
+   
   },
   title: {
     fontSize: "24px",
