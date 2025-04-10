@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../Firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,9 +15,7 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setMessage("Login successful!");
-
-      // ✅ Redirect to dashboard
-      navigate("/dashboard");
+      navigate("/dashboard"); // redirect
     } catch (error) {
       setMessage("Login failed: " + error.message);
     }
@@ -26,12 +24,14 @@ const Login = () => {
   return (
     <div>
       <h2>Login</h2>
+
       <form onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         /><br />
 
         <input
@@ -39,11 +39,18 @@ const Login = () => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         /><br />
 
         <button type="submit">Login</button>
       </form>
+
       <p>{message}</p>
+
+      <p>Don't have an account?</p>
+      <Link to="/register">
+        <button>Register</button>
+      </Link>
     </div>
   );
 };
