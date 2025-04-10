@@ -1,9 +1,7 @@
-from fastapi import FastAPI
-from sqlmodel import SQLModel, Field, create_engine, Session
+from fastapi import FastAPI, HTTPException
+from sqlmodel import SQLModel, Field, create_engine, Session, select
 from pydantic import BaseModel
 from typing import Optional
-from fastapi import HTTPException
-from sqlmodel import select
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -45,7 +43,7 @@ class UserCreate(BaseModel):
 # POST-Endpunkt für Registrierung
 @app.post("/register")
 def register_user(user: UserCreate):
-    print("📥 Backend hat empfangen:", user.dict())  # <-- Logging
+    print("📥 Backend received:", user.dict())  # <-- Logging
 
     new_user = User(**user.dict())
 
