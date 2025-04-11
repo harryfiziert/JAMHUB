@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -12,17 +13,35 @@ function App() {
         <Sidebar />
         <div style={{ marginLeft: "250px", padding: "20px", flexGrow: 1 }}>
           <Routes>
-            <Route path="/dashboard" element={<div>Dashboard Page</div>} />
-            <Route path="/flashcards" element={<div>Flashcards Page</div>} />
-            <Route path="/upload" element={<div>Upload Page</div>} />
-            <Route path="/rooms" element={<div>Rooms Page</div>} />
-            <Route path="/progress" element={<div>Progress Page</div>} />
-            <Route path="/exam" element={<div>Exam Simulation Page</div>} />
-            <Route path="/settings" element={<div>Settings Page</div>} />
-            <Route path="/logout" element={<div>Logout</div>} />
-            <Route path="/register" element={<Register />} /> {/* <== HIER KORREKT */}
+            {/* Öffentliche Routen */}
+            <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/profile" element={<Profile />} />
+
+            {/* Geschützte Routen */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute><div>Dashboard Page</div></ProtectedRoute>
+            } />
+            <Route path="/flashcards" element={
+              <ProtectedRoute><div>Flashcards Page</div></ProtectedRoute>
+            } />
+            <Route path="/upload" element={
+              <ProtectedRoute><div>Upload Page</div></ProtectedRoute>
+            } />
+            <Route path="/rooms" element={
+              <ProtectedRoute><div>Rooms Page</div></ProtectedRoute>
+            } />
+            <Route path="/progress" element={
+              <ProtectedRoute><div>Progress Page</div></ProtectedRoute>
+            } />
+            <Route path="/exam" element={
+              <ProtectedRoute><div>Exam Simulation Page</div></ProtectedRoute>
+            } />
+            <Route path="/settings" element={<div>Settings Page</div>} />
+            
+            <Route path="/profile" element={
+              <ProtectedRoute><Profile /></ProtectedRoute>
+            } />
+            <Route path="/logout" element={<div>Logout</div>} />
           </Routes>
         </div>
       </div>
