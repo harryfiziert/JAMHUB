@@ -59,7 +59,9 @@ const Dashboard = () => {
 
             {/* Card Grid */}
             <div style={styles.grid}>
-                <div style={{ ...styles.card, backgroundColor: "#1e1e2f", color: "white" }}>
+                <div
+                    style={{ ...styles.card, backgroundColor: "#1e1e2f", color: "white" }}
+                >
                     <h3>FlashCards Set</h3>
                     <button style={styles.button}>Bearbeiten</button>
                 </div>
@@ -87,7 +89,10 @@ const Dashboard = () => {
                 </div>
                 <div style={styles.chart}>
                     <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                        <BarChart
+                            data={chartData}
+                            margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                        >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="day" />
                             <YAxis />
@@ -109,10 +114,11 @@ const styles = {
         fontFamily: "Arial, sans-serif",
         backgroundColor: "#f6f6f6",
         minHeight: "100vh",
-        boxSizing: "border-box",
         width: "100%",
-        maxWidth: "none",
-        flexGrow: 1,
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1, // WICHTIG: Nimmt gesamten Platz ein
     },
     header: {
         display: "flex",
@@ -168,7 +174,7 @@ const styles = {
     },
     grid: {
         display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
+        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
         gap: "24px",
         marginBottom: "40px",
     },

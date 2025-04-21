@@ -1,10 +1,11 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./components/SideBar";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
 import Dashboard from "./components/Dashboard";
+import Upload from "./components/Upload";
 
 function App() {
   return (
@@ -16,11 +17,19 @@ function App() {
           </div>
 
           {/* Hauptinhalt mit voller Breite */}
-          <div style={{ flexGrow: 1, overflowX: "hidden" }}>
+          <div
+              style={{
+                flexGrow: 1,
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                overflowX: "hidden",
+              }}
+          >
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/upload" element={<Upload />} />
               <Route path="/flashcards" element={<div>Flashcards Page</div>} />
-              <Route path="/upload" element={<div>Upload Page</div>} />
               <Route path="/rooms" element={<div>Rooms Page</div>} />
               <Route path="/progress" element={<div>Progress Page</div>} />
               <Route path="/exam" element={<div>Exam Simulation Page</div>} />
