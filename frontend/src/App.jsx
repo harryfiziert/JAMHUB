@@ -4,29 +4,35 @@ import Sidebar from "./components/Sidebar";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   return (
-    <Router>
-      <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div style={{ marginLeft: "250px", padding: "20px", flexGrow: 1 }}>
-          <Routes>
-            <Route path="/dashboard" element={<div>Dashboard Page</div>} />
-            <Route path="/flashcards" element={<div>Flashcards Page</div>} />
-            <Route path="/upload" element={<div>Upload Page</div>} />
-            <Route path="/rooms" element={<div>Rooms Page</div>} />
-            <Route path="/progress" element={<div>Progress Page</div>} />
-            <Route path="/exam" element={<div>Exam Simulation Page</div>} />
-            <Route path="/settings" element={<div>Settings Page</div>} />
-            <Route path="/logout" element={<div>Logout</div>} />
-            <Route path="/register" element={<Register />} /> {/* <== HIER KORREKT */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
+      <Router>
+        <div style={{ display: "flex", height: "100vh", width: "100%" }}>
+          {/* Sidebar mit fixer Breite */}
+          <div style={{ width: "250px" }}>
+            <Sidebar />
+          </div>
+
+          {/* Hauptinhalt mit voller Breite */}
+          <div style={{ flexGrow: 1, overflowX: "hidden" }}>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/flashcards" element={<div>Flashcards Page</div>} />
+              <Route path="/upload" element={<div>Upload Page</div>} />
+              <Route path="/rooms" element={<div>Rooms Page</div>} />
+              <Route path="/progress" element={<div>Progress Page</div>} />
+              <Route path="/exam" element={<div>Exam Simulation Page</div>} />
+              <Route path="/settings" element={<div>Settings Page</div>} />
+              <Route path="/logout" element={<div>Logout</div>} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
   );
 }
 
