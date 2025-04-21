@@ -1,6 +1,6 @@
 import os
 
-from flask.cli import load_dotenv
+from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
