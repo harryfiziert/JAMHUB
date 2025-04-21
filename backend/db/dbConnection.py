@@ -1,7 +1,11 @@
+import os
+
+from flask.cli import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-uri = "mongodb+srv://julian:XWul7F7L4l6AyhBY@jamhub.szt6lxj.mongodb.net/?retryWrites=true&w=majority&appName=JAMHUB"
+load_dotenv()
+uri = os.getenv("MONGO_URI")
 
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
