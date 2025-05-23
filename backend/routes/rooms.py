@@ -4,7 +4,6 @@ from typing import List
 from db.dbConnection import db
 import random
 import string
-print(">>> RICHTIGE rooms.py ist geladen")
 
 router = APIRouter()
 collection = db["rooms"]
