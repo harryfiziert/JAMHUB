@@ -7,6 +7,8 @@ from db.dbConnection import db
 import os
 from openai import OpenAI
 import fitz  # PyMuPDF
+import json
+
 
 router = APIRouter()
 load_dotenv()
@@ -34,7 +36,8 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"PDF konnte nicht gelesen werden: {e}")
 
-    chunks = [full_text[i:i+800] for i in range(0, len(full_text), 800)]
+    chunks = [para.strip() for para in full_text.split("\n\n") if len(para.strip()) > 100]
+    print(f"DEBUG: {len(chunks)} Chunks (nach Absätzen)")
     created = []
 
     for chunk in chunks:
@@ -45,10 +48,11 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                     {
                         "role": "system",
                         "content": (
-                            "Analysiere den folgenden Text und erstelle daraus mehrere Flashcards. "
-                            "Gib die Karten als JSON-Array zurück, z.B.: "
-                            "[{\"question\": \"...\", \"answer\": \"...\"}, {\"question\": \"...\", \"answer\": \"...\"}]. "
-                            "Erzeuge mindestens 3 sinnvolle Karten, wenn möglich."
+                            "Erstelle aus dem folgenden Text eine Liste von Lernkarten. "
+                            "Jede Karte hat ein 'question'- und ein 'answer'-Feld. "
+                            "Gib ausschließlich ein JSON-Array zurück. "
+                            "Kein Einleitungstext, keine Erklärung – nur das JSON. "
+                            "Beispiel: [{\"question\": \"...\", \"answer\": \"...\"}]"
                         )
                     },
                     {
@@ -58,7 +62,15 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                 ]
 
             )
-            cards = eval(raw)
+            raw = response.choices[0].message.content.strip()
+
+            try:
+                cards = json.loads(raw)
+            except json.JSONDecodeError as e:
+                raise HTTPException(status_code=500, detail={
+                    "error": f"Fehler beim JSON-Parsing: {str(e)}",
+                    "gpt_output": raw
+                })
             for card in cards:
                 card["user_id"] = user_id
                 card["room_id"] = room_id
