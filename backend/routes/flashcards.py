@@ -131,3 +131,10 @@ def get_flashcards_by_user(user_id: str):
     for card in cards:
         card["_id"] = str(card["_id"])
     return cards
+
+# @router.get("/flashcards/by-room/{room_id}")
+# def get_flashcards_by_room(room_id: str):
+#     cards = list(collection.find({"room_id": room_id}))
+#     for card in cards:
+#         card["_id"] = str(card["_id"])
+#     return cards
