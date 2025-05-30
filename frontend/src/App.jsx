@@ -7,6 +7,9 @@ import Profile from "./components/Profile";
 import Dashboard from "./components/Dashboard";
 import Upload from "./components/Upload";
 import Settings from "./components/Settings"; // <- wichtig!
+import VirtualRoomActions from "./components/VirtualRoomActions";
+import VirtualRoomPage from "./components/VirtualRoomPage";
+
 
 
 function App() {
@@ -32,7 +35,7 @@ function App() {
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/upload" element={<Upload />} />
                         <Route path="/flashcards" element={<div>Flashcards Page</div>} />
-                        <Route path="/rooms" element={<div>Rooms Page</div>} />
+                        <Route path="/rooms" element={<VirtualRoomPage />} />
                         <Route path="/progress" element={<div>Progress Page</div>} />
                         <Route path="/exam" element={<div>Exam Simulation Page</div>} />
                         <Route path="/settings" element={<Settings />} /> {/* ← updated here */}
@@ -40,6 +43,8 @@ function App() {
                         <Route path="/register" element={<Register />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/profile" element={<Profile />} />
+                        <Route path="/room/create" element={<VirtualRoomActions />} />
+                        <Route path="/room/join" element={<VirtualRoomActions />} />
                     </Routes>
                 </div>
             </div>
