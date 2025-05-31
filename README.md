@@ -4,7 +4,7 @@
 ### beim ersten mal:
 .env Datei mit Befehl aus Zeile aus Whatsapp erstellen :D
 
-pip install
+npm install
 
 ### danach:
 cd ./backend
