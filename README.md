@@ -4,10 +4,8 @@
 ### beim ersten mal:
 .env Datei mit Befehl aus Zeile aus Whatsapp erstellen :D
 
-npm install
-
-### danach:
-cd ./backend
+### sonst:
+cd .\backend\  
 
 uvicorn main:app --reload
 
