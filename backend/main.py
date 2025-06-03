@@ -21,4 +21,5 @@ app.include_router(user_router)
 app.include_router(rooms_router)
 app.include_router(flashcard_router)
 
+
 print("✅ main.py geladen")
