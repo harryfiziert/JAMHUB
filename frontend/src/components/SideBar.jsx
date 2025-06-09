@@ -1,58 +1,82 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../Firebase";
+
 
 const Sidebar = () => {
   const [darkMode, setDarkMode] = useState(true);
+  const navigate = useNavigate();
 
   const toggleMode = () => setDarkMode(!darkMode);
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
-      <div style={styles.sidebar}>
-        {/* Top Section */}
-        <div>
-          <h2 style={styles.title}>LernApp</h2>
+    <div style={styles.sidebar}>
+      {/* Top Section */}
+      <div>
+        <h2 style={styles.title}>LernApp</h2>
 
-          <nav style={styles.nav}>
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>Overview</div>
-              <div style={styles.subLinks}>
-                <Link to="/dashboard" style={styles.link}>Summary</Link>
-                <Link to="/custom" style={styles.link}>Custom view</Link>
-              </div>
+        <nav style={styles.nav}>
+          <div style={styles.section}>
+            <div style={styles.sectionTitle}>Overview</div>
+            <div style={styles.subLinks}>
+              <Link to="/dashboard" style={styles.link}>Summary</Link>
+              <Link to="/custom" style={styles.link}>Custom view</Link>
             </div>
+          </div>
 
-            <div style={styles.section}>
-              <Link to="/flashcards" style={styles.link}>Flashcards</Link>
-              <Link to="/upload" style={styles.link}>Upload</Link>
-              <Link to="/rooms" style={styles.link}>Räume</Link>
-              <Link to="/progress" style={styles.link}>Fortschritt</Link>
-              <Link to="/exam" style={styles.link}>Exam Simulation</Link>
+          <div style={styles.section}>
+            <Link to="/flashcards" style={styles.link}>Flashcards</Link>
+            <Link to="/upload" style={styles.link}>Upload</Link>
+            <Link to="/rooms" style={styles.link}>Räume</Link>
+            <Link to="/progress" style={styles.link}>Fortschritt</Link>
+            <Link to="/exam" style={styles.link}>Exam Simulation</Link>
+          </div>
+
+          <hr style={styles.divider} />
+
+          <div style={styles.section}>
+            <Link to="/settings" style={styles.link}>Settings</Link>
+          </div>
+
+          <div style={styles.toggleWrapper}>
+            <div style={styles.toggle} onClick={toggleMode}>
+              <span style={{ opacity: darkMode ? 1 : 0.3 }}>🌞</span>
+              <span style={styles.toggleSlider}></span>
+              <span style={{ opacity: darkMode ? 0.3 : 1 }}>🌙</span>
             </div>
-
-            <hr style={styles.divider} />
-
-            <div style={styles.section}>
-              <Link to="/settings" style={styles.link}>Settings</Link>
-            </div>
-
-            <div style={styles.toggleWrapper}>
-              <div style={styles.toggle} onClick={toggleMode}>
-                <span style={{ opacity: darkMode ? 1 : 0.3 }}>🌞</span>
-                <span style={styles.toggleSlider}></span>
-                <span style={{ opacity: darkMode ? 0.3 : 1 }}>🌙</span>
-              </div>
-            </div>
-          </nav>
-        </div>
-
-        {/* Bottom Section */}
-        <div style={styles.bottomArea}>
-          <div style={styles.tutorial}>Webapp - Tutorial</div>
-          <Link to="/logout" style={{ ...styles.link, color: "red", marginTop: "8px" }}>
-            Log out
-          </Link>
-        </div>
+          </div>
+        </nav>
       </div>
+
+      {/* Bottom Section */}
+      <div style={styles.bottomArea}>
+        <div style={styles.tutorial}>Webapp - Tutorial</div>
+        <button
+          onClick={handleLogout}
+          style={{
+            ...styles.link,
+            color: "red",
+            marginTop: "8px",
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+          }}
+        >
+          Log out
+        </button>
+      </div>
+    </div>
   );
 };
 

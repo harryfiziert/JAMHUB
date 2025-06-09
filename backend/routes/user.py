@@ -35,4 +35,17 @@ def get_user(uid: str):
     user["_id"] = str(user["_id"])
     return user
 
+@router.get("/user/by-username/{username}")
+def get_user_by_username(username: str):
+    user = collection.find_one({"username": {"$regex": f"^{username}$", "$options": "i"}})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"email": user["email"]}
+
+@router.put("/user/update/{uid}")
+def update_user(uid: str, updated: dict):
+    collection.update_one({"uid": uid}, {"$set": updated})
+    return {"message": "User updated"}
+
 
