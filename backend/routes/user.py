@@ -19,7 +19,7 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     email: EmailStr | None = None
     username: str | None = None
-    password: constr(min_length=6) | None = None
+    password: constr(min_length=1) | None = None
 
 # POST: Registrierung
 @router.post("/register")

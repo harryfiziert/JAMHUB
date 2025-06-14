@@ -9,7 +9,6 @@ from openai import OpenAI
 import fitz  # PyMuPDF
 import json
 
-
 router = APIRouter()
 load_dotenv()
 
@@ -25,7 +24,7 @@ class FlashcardInput(BaseModel):
 class FlashcardUpdate(BaseModel):
     question: Optional[str]
     answer: Optional[str]
-
+    learned: Optional[bool]
 
 @router.post("/flashcards/from-pdf")
 async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: str = "", room_id: str = ""):
@@ -60,7 +59,6 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                         "content": chunk
                     }
                 ]
-
             )
             raw = response.choices[0].message.content.strip()
 
@@ -74,6 +72,7 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
             for card in cards:
                 card["user_id"] = user_id
                 card["room_id"] = room_id
+                card["learned"] = False  # standardmäßig ungelernte Karte
                 result = collection.insert_one(card)
                 card["_id"] = str(result.inserted_id)
                 created.append(card)
@@ -95,12 +94,12 @@ def get_test_flashcards():
     for card in dummy_cards:
         card["user_id"] = "test-user"
         card["room_id"] = "test-room"
+        card["learned"] = False  
         result = collection.insert_one(card)
         card["_id"] = str(result.inserted_id)
         stored.append(card)
 
     return stored
-
 
 @router.get("/flashcard/{id}")
 def get_flashcard(id: str):
@@ -132,9 +131,44 @@ def get_flashcards_by_user(user_id: str):
         card["_id"] = str(card["_id"])
     return cards
 
-# @router.get("/flashcards/by-room/{room_id}")
-# def get_flashcards_by_room(room_id: str):
-#     cards = list(collection.find({"room_id": room_id}))
-#     for card in cards:
-#         card["_id"] = str(card["_id"])
-#     return cards
+@router.get("/flashcards/by-room/{room_id}")
+def get_flashcards_by_room(room_id: str):
+    cards = list(collection.find({"room_id": room_id}))
+    for card in cards:
+        card["_id"] = str(card["_id"])
+    return cards
+
+#Fortschritt pro Set (M5)
+@router.get("/flashcards/progress/{user_id}")
+def get_progress_by_user(user_id: str):
+    pipeline = [
+        {"$match": {"user_id": user_id}},
+        {
+            "$group": {
+                "_id": "$room_id",
+                "total": {"$sum": 1},
+                "learned": {
+                    "$sum": {
+                        "$cond": [{"$eq": ["$learned", True]}, 1, 0]
+                    }
+                }
+            }
+        },
+        {
+            "$project": {
+                "room_id": "$_id",
+                "total": 1,
+                "learned": 1,
+                "progress": {
+                    "$cond": [
+                        {"$eq": ["$total", 0]},
+                        0,
+                        {"$divide": ["$learned", "$total"]}
+                    ]
+                }
+            }
+        }
+    ]
+
+    result = list(collection.aggregate(pipeline))
+    return result
