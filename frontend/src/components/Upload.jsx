@@ -6,7 +6,7 @@ const Upload = ({ roomId }) => {
     const [error, setError] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [successMessage, setSuccessMessage] = useState(null);
-
+    const userId = localStorage.getItem("userId"); 
     const handleFile = async (file) => {
         if (file.type !== "application/pdf") {
             setError("Nur PDF-Dateien sind erlaubt.");
@@ -21,6 +21,8 @@ const Upload = ({ roomId }) => {
 
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("user_id", userId);
+        formData.append("room_id", roomId);
 
         try {
             const res = await fetch(`http://localhost:8000/upload-pdf/${roomId}`, {

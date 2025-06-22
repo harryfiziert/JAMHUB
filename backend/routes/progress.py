@@ -41,6 +41,23 @@ def get_user_badges(user_id: str):
         "total_learned": total_learned,
         "badges": badges
     }
+@router.get("/progress/{user_id}/{room_id}")
+def get_progress_for_room(user_id: str, room_id: str):
+    cards = list(flashcards_collection.find({
+        "user_id": user_id,
+        "room_id": room_id
+    }))
+
+    total = len(cards)
+    learned = sum(1 for card in cards if card.get("learned") == True)
+
+    return {
+        "room_id": room_id,
+        "user_id": user_id,
+        "total_cards": total,
+        "learned_cards": learned,
+        "percent": round((learned / total) * 100) if total > 0 else 0
+    }
 
 
 

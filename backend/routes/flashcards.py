@@ -10,6 +10,7 @@ import fitz  # PyMuPDF
 import json
 from datetime import datetime
 import random
+from fastapi import Form
 
 router = APIRouter()
 load_dotenv()
@@ -39,7 +40,8 @@ class CommentInput(BaseModel):
 # ─────────────── FLASHCARDS ───────────────
 
 @router.post("/flashcards/from-pdf")
-async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: str = "", room_id: str = ""):
+async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: str = Form(...),
+room_id: str = Form(...)):
     try:
         pdf_bytes = await file.read()
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")

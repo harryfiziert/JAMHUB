@@ -1,56 +1,48 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const ProgressTracker = ({ userId }) => {
-  const [sets, setSets] = useState([]);
+const ProgressTracker = ({ userId, roomId }) => {
+  const [progress, setProgress] = useState(null);
 
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/progress/${userId}`);
-        setSets(res.data.sets);
+        const res = await axios.get(`http://localhost:8000/progress/${userId}/${roomId}`);
+        setProgress(res.data);
       } catch (err) {
-        console.error("Fehler beim Laden des Fortschritts:", err);
+        console.error("❌ Fehler beim Laden des Fortschritts:", err);
       }
     };
-    fetchProgress();
-  }, [userId]);
+
+    if (userId && roomId) fetchProgress();
+  }, [userId, roomId]);
+
+  if (!progress) return null;
 
   return (
     <div style={styles.wrapper}>
-      <h2 style={styles.heading}>Lernfortschritt</h2>
-      {sets.map((set) => {
-        const percent = Math.round((set.learned_cards / set.total_cards) * 100);
-        return (
-          <div key={set.set_id || set._id} style={styles.setBox}>
-            <h3>{set.title || "Unbenanntes Set"}</h3>
-            <div style={styles.progressBarBackground}>
-              <div style={{ ...styles.progressBarFill, width: `${percent}%` }} />
-            </div>
-            <p style={styles.percentText}>
-              {percent}% gelernt ({set.learned_cards} / {set.total_cards})
-            </p>
-          </div>
-        );
-      })}
+      <h3 style={styles.heading}>📈 Lernfortschritt in diesem Raum</h3>
+      <div style={styles.progressBarBackground}>
+        <div style={{ ...styles.progressBarFill, width: `${progress.percent}%` }} />
+      </div>
+      <p style={styles.percentText}>
+        {progress.percent}% gelernt ({progress.learned_cards} von {progress.total_cards})
+      </p>
     </div>
   );
 };
 
 const styles = {
   wrapper: {
-    marginTop: "40px",
-    padding: "20px",
-    borderRadius: "16px",
+    marginTop: "20px",
+    padding: "16px",
+    borderRadius: "12px",
     backgroundColor: "#fff",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
   },
   heading: {
-    fontSize: "22px",
-    marginBottom: "20px",
-  },
-  setBox: {
-    marginBottom: "24px",
+    fontSize: "18px",
+    marginBottom: "12px",
   },
   progressBarBackground: {
     backgroundColor: "#eee",
