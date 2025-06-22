@@ -42,6 +42,8 @@ def get_user_badges(user_id: str):
         "badges": badges
     }
 
+
+
 # 🔧 Optional: Return full badge structure
 # return {
 #     "user_id": user_id,

@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 
-const Flashcards = () => {
+const Flashcards = ({ roomId }) => {
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState({ question: "", answer: "" });
     const [comments, setComments] = useState({});
     const [newComment, setNewComment] = useState({});
+    const userId = localStorage.getItem("userId");
 
+    // Flashcards für den Raum laden
     useEffect(() => {
-        fetch("http://127.0.0.1:8000/flashcards/by-user/test-user")
+        fetch(`http://127.0.0.1:8000/flashcards/by-room/${roomId}`)
             .then((res) => res.json())
             .then((data) => {
                 setCards(data);
@@ -17,10 +19,10 @@ const Flashcards = () => {
                 data.forEach((card) => fetchComments(card._id));
             })
             .catch((err) => {
-                console.error("❌ Error loading flashcards:", err);
+                console.error("❌ Fehler beim Laden der Flashcards:", err);
                 setLoading(false);
             });
-    }, []);
+    }, [roomId]);
 
     const fetchComments = (cardId) => {
         fetch(`http://127.0.0.1:8000/comments/${cardId}`)
@@ -28,7 +30,7 @@ const Flashcards = () => {
             .then((data) => {
                 setComments((prev) => ({ ...prev, [cardId]: data }));
             })
-            .catch((err) => console.error("❌ Fetch comments failed:", err));
+            .catch((err) => console.error("❌ Kommentare konnten nicht geladen werden:", err));
     };
 
     const handleEditClick = (card) => {
@@ -54,14 +56,14 @@ const Flashcards = () => {
                 body: JSON.stringify(payload),
             });
 
-            if (!res.ok) throw new Error("Update failed");
+            if (!res.ok) throw new Error("Update fehlgeschlagen");
 
             setCards((prev) =>
                 prev.map((card) => (card._id === id ? { ...card, ...payload } : card))
             );
             setEditingId(null);
         } catch (err) {
-            console.error("❌ Save failed:", err);
+            console.error("❌ Speichern fehlgeschlagen:", err);
         }
     };
 
@@ -71,7 +73,7 @@ const Flashcards = () => {
 
     const handleCommentSubmit = async (cardId) => {
         const content = newComment[cardId]?.trim();
-        if (!content) return;
+        if (!content || !userId) return;
 
         try {
             const res = await fetch("http://127.0.0.1:8000/comments", {
@@ -79,17 +81,17 @@ const Flashcards = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     flashcard_id: cardId,
-                    user_id: "test-user",
+                    user_id: userId,
                     content,
                 }),
             });
 
-            if (!res.ok) throw new Error("Comment post failed");
+            if (!res.ok) throw new Error("Kommentar konnte nicht gesendet werden");
 
             setNewComment((prev) => ({ ...prev, [cardId]: "" }));
             fetchComments(cardId);
         } catch (err) {
-            console.error("❌ Submit comment failed:", err);
+            console.error("❌ Kommentar-Submit fehlgeschlagen:", err);
         }
     };
 
@@ -98,10 +100,10 @@ const Flashcards = () => {
             const res = await fetch(`http://127.0.0.1:8000/comments/${commentId}`, {
                 method: "DELETE",
             });
-            if (!res.ok) throw new Error("Delete failed");
-            fetchComments(cardId); // Refresh comment list
+            if (!res.ok) throw new Error("Löschen fehlgeschlagen");
+            fetchComments(cardId);
         } catch (err) {
-            console.error("❌ Delete comment failed:", err);
+            console.error("❌ Kommentar löschen fehlgeschlagen:", err);
         }
     };
 
@@ -112,7 +114,7 @@ const Flashcards = () => {
     if (loading) {
         return (
             <div style={styles.loadingContainer}>
-                <p style={styles.loadingText}>Loading flashcards...</p>
+                <p style={styles.loadingText}>Flashcards werden geladen...</p>
             </div>
         );
     }
@@ -121,7 +123,7 @@ const Flashcards = () => {
         <div style={styles.container}>
             <h2 style={styles.heading}>Flashcards</h2>
             {cards.length === 0 ? (
-                <p style={styles.noData}>No flashcards available.</p>
+                <p style={styles.noData}>Keine Flashcards vorhanden.</p>
             ) : (
                 cards.map((card) => (
                     <div key={card._id} style={styles.card}>
@@ -132,14 +134,14 @@ const Flashcards = () => {
                                     value={editData.question}
                                     onChange={handleChange}
                                     style={styles.input}
-                                    placeholder="Question"
+                                    placeholder="Frage"
                                 />
                                 <input
                                     name="answer"
                                     value={editData.answer}
                                     onChange={handleChange}
                                     style={styles.input}
-                                    placeholder="Answer"
+                                    placeholder="Antwort"
                                 />
                                 <button
                                     onClick={() => handleSave(card._id)}
@@ -161,7 +163,7 @@ const Flashcards = () => {
                             </>
                         )}
 
-                        {/* 💬 Comments */}
+                        {/* Kommentare */}
                         <div style={styles.commentSection}>
                             <strong>Kommentare:</strong>
                             <ul style={styles.commentList}>

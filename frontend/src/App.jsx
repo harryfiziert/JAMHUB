@@ -5,15 +5,16 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
 import Dashboard from "./components/Dashboard";
-import Upload from "./components/Upload";
 import Settings from "./components/Settings";
 import VirtualRoomActions from "./components/VirtualRoomActions";
 import VirtualRoomPage from "./components/VirtualRoomPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Flashcards from "./components/Flashcard";
-import ExamSimulation from "./components/ExamSimulation"; // ✅ New import
+import ExamSimulation from "./components/ExamSimulation";
+import Upload from "./components/Upload";
 import { auth } from "./Firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import RoomView from "./components/RoomView"; // ✅ neue Komponente importieren
 
 function App() {
     const [user, setUser] = useState(undefined); // undefined = loading
@@ -29,14 +30,14 @@ function App() {
     return (
         <Router>
             <div style={{ display: "flex", height: "100vh", width: "100%" }}>
-                {/* Sidebar only if loaded and logged in */}
+                {/* Sidebar nur anzeigen wenn eingeloggt */}
                 {user !== undefined && user && (
                     <div style={{ width: "250px" }}>
                         <Sidebar />
                     </div>
                 )}
 
-                {/* Main content */}
+                {/* Hauptinhalt */}
                 <div
                     style={{
                         flexGrow: 1,
@@ -47,11 +48,11 @@ function App() {
                     }}
                 >
                     <Routes>
-                        {/* Public Routes */}
+                        {/* Öffentliche Seiten */}
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
 
-                        {/* Protected Routes */}
+                        {/* Geschützte Seiten */}
                         <Route
                             path="/dashboard"
                             element={
@@ -96,7 +97,7 @@ function App() {
                             path="/exam"
                             element={
                                 <ProtectedRoute>
-                                    <ExamSimulation /> {/* ✅ Replaced div with actual component */}
+                                    <ExamSimulation />
                                 </ProtectedRoute>
                             }
                         />
@@ -129,6 +130,16 @@ function App() {
                             element={
                                 <ProtectedRoute>
                                     <VirtualRoomActions />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        {/* ✅ Neue Raum-Detailseite */}
+                        <Route
+                            path="/room/:roomId"
+                            element={
+                                <ProtectedRoute>
+                                    <RoomView />
                                 </ProtectedRoute>
                             }
                         />
