@@ -10,12 +10,13 @@ import Settings from "./components/Settings";
 import VirtualRoomActions from "./components/VirtualRoomActions";
 import VirtualRoomPage from "./components/VirtualRoomPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Flashcards from "./components/Flashcard"; // ✅ Corrected import
+import Flashcards from "./components/Flashcard";
+import ExamSimulation from "./components/ExamSimulation"; // ✅ New import
 import { auth } from "./Firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 function App() {
-    const [user, setUser] = useState(undefined); // undefined = wird geladen
+    const [user, setUser] = useState(undefined); // undefined = loading
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -28,14 +29,14 @@ function App() {
     return (
         <Router>
             <div style={{ display: "flex", height: "100vh", width: "100%" }}>
-                {/* Sidebar nur anzeigen, wenn geladen UND eingeloggt */}
+                {/* Sidebar only if loaded and logged in */}
                 {user !== undefined && user && (
                     <div style={{ width: "250px" }}>
                         <Sidebar />
                     </div>
                 )}
 
-                {/* Hauptinhalt */}
+                {/* Main content */}
                 <div
                     style={{
                         flexGrow: 1,
@@ -46,11 +47,11 @@ function App() {
                     }}
                 >
                     <Routes>
-                        {/* Öffentliche Routen */}
+                        {/* Public Routes */}
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
 
-                        {/* Geschützte Routen */}
+                        {/* Protected Routes */}
                         <Route
                             path="/dashboard"
                             element={
@@ -95,7 +96,7 @@ function App() {
                             path="/exam"
                             element={
                                 <ProtectedRoute>
-                                    <div>Exam Simulation Page</div>
+                                    <ExamSimulation /> {/* ✅ Replaced div with actual component */}
                                 </ProtectedRoute>
                             }
                         />

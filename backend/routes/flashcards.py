@@ -9,6 +9,7 @@ from openai import OpenAI
 import fitz  # PyMuPDF
 import json
 from datetime import datetime
+import random
 
 router = APIRouter()
 load_dotenv()
@@ -16,11 +17,9 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 collection = db["flashcards"]
-comments = db["comments"]  # ➕ MongoDB collection for comments
+comments = db["comments"]
 
-# ────────────────────────────────────────────────
-# MODELS
-# ────────────────────────────────────────────────
+# ─────────────── MODELS ───────────────
 
 class FlashcardInput(BaseModel):
     text: str
@@ -37,9 +36,7 @@ class CommentInput(BaseModel):
     user_id: str
     content: str
 
-# ────────────────────────────────────────────────
-# FLASHCARD ENDPOINTS
-# ────────────────────────────────────────────────
+# ─────────────── FLASHCARDS ───────────────
 
 @router.post("/flashcards/from-pdf")
 async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: str = "", room_id: str = ""):
@@ -164,9 +161,26 @@ def get_progress_by_user(user_id: str):
     ]
     return list(collection.aggregate(pipeline))
 
-# ────────────────────────────────────────────────
-# COMMENT ENDPOINTS
-# ────────────────────────────────────────────────
+# ─────────────── 🆕 Exam Simulation Endpoint ───────────────
+
+@router.get("/exam-simulation/{user_id}")
+def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
+    query = {"user_id": user_id}
+    if room_id:
+        query["room_id"] = room_id
+
+    cards = list(collection.find(query))
+    random.shuffle(cards)
+    exam_cards = cards[:limit]
+
+    for card in exam_cards:
+        card["_id"] = str(card["_id"])
+        card.pop("answer", None)  # hide answers
+        card.pop("learned", None)
+
+    return exam_cards
+
+# ─────────────── COMMENTS ───────────────
 
 @router.post("/comments")
 def add_comment(comment: CommentInput):
