@@ -1,14 +1,14 @@
 import os
 
-from dotenv import load_dotenv
-from pymongo.mongo_client import MongoClient
+import dotenv
+import pymongo.mongo_client
 from pymongo.server_api import ServerApi
 
-load_dotenv()
+dotenv.load_dotenv()
 uri = os.getenv("MONGO_URI")
 
 # Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
+client = pymongo.mongo_client.MongoClient(uri, server_api=ServerApi('1'))
 db = client["JAMHUB"]
 # Send a ping to confirm a successful connection
 try:

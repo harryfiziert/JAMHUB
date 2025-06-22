@@ -8,6 +8,7 @@ import os
 from openai import OpenAI
 import fitz  # PyMuPDF
 import json
+from datetime import datetime
 
 router = APIRouter()
 load_dotenv()
@@ -15,6 +16,11 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 collection = db["flashcards"]
+comments = db["comments"]  # ➕ MongoDB collection for comments
+
+# ────────────────────────────────────────────────
+# MODELS
+# ────────────────────────────────────────────────
 
 class FlashcardInput(BaseModel):
     text: str
@@ -26,6 +32,15 @@ class FlashcardUpdate(BaseModel):
     answer: Optional[str]
     learned: Optional[bool]
 
+class CommentInput(BaseModel):
+    flashcard_id: str
+    user_id: str
+    content: str
+
+# ────────────────────────────────────────────────
+# FLASHCARD ENDPOINTS
+# ────────────────────────────────────────────────
+
 @router.post("/flashcards/from-pdf")
 async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: str = "", room_id: str = ""):
     try:
@@ -36,7 +51,6 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
         raise HTTPException(status_code=400, detail=f"PDF konnte nicht gelesen werden: {e}")
 
     chunks = [para.strip() for para in full_text.split("\n\n") if len(para.strip()) > 100]
-    print(f"DEBUG: {len(chunks)} Chunks (nach Absätzen)")
     created = []
 
     for chunk in chunks:
@@ -61,45 +75,25 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                 ]
             )
             raw = response.choices[0].message.content.strip()
-
-            try:
-                cards = json.loads(raw)
-            except json.JSONDecodeError as e:
-                raise HTTPException(status_code=500, detail={
-                    "error": f"Fehler beim JSON-Parsing: {str(e)}",
-                    "gpt_output": raw
-                })
+            cards = json.loads(raw)
             for card in cards:
                 card["user_id"] = user_id
                 card["room_id"] = room_id
-                card["learned"] = False  # standardmäßig ungelernte Karte
+                card["learned"] = False
                 result = collection.insert_one(card)
                 card["_id"] = str(result.inserted_id)
                 created.append(card)
-
         except Exception as e:
             created.append({"error": f"Fehler bei Chunk: {chunk[:50]}...", "detail": str(e)})
 
     return created
 
-@router.get("/flashcards/test")
-def get_test_flashcards():
-    dummy_cards = [
-        {"question": "Was ist die Hauptstadt von Frankreich?", "answer": "Paris"},
-        {"question": "Was ist 3 + 4?", "answer": "7"},
-        {"question": "Wofür steht CPU?", "answer": "Central Processing Unit"}
-    ]
-
-    stored = []
-    for card in dummy_cards:
-        card["user_id"] = "test-user"
-        card["room_id"] = "test-room"
-        card["learned"] = False  
-        result = collection.insert_one(card)
-        card["_id"] = str(result.inserted_id)
-        stored.append(card)
-
-    return stored
+@router.get("/flashcards")
+def get_all_flashcards():
+    cards = list(collection.find())
+    for card in cards:
+        card["_id"] = str(card["_id"])
+    return cards
 
 @router.get("/flashcard/{id}")
 def get_flashcard(id: str):
@@ -138,7 +132,6 @@ def get_flashcards_by_room(room_id: str):
         card["_id"] = str(card["_id"])
     return cards
 
-#Fortschritt pro Set (M5)
 @router.get("/flashcards/progress/{user_id}")
 def get_progress_by_user(user_id: str):
     pipeline = [
@@ -169,6 +162,35 @@ def get_progress_by_user(user_id: str):
             }
         }
     ]
+    return list(collection.aggregate(pipeline))
 
-    result = list(collection.aggregate(pipeline))
+# ────────────────────────────────────────────────
+# COMMENT ENDPOINTS
+# ────────────────────────────────────────────────
+
+@router.post("/comments")
+def add_comment(comment: CommentInput):
+    if not collection.find_one({"_id": ObjectId(comment.flashcard_id)}):
+        raise HTTPException(status_code=404, detail="Flashcard not found")
+
+    result = comments.insert_one({
+        "flashcard_id": comment.flashcard_id,
+        "user_id": comment.user_id,
+        "content": comment.content,
+        "created_at": datetime.utcnow()
+    })
+    return {"message": "Comment added", "id": str(result.inserted_id)}
+
+@router.get("/comments/{flashcard_id}")
+def get_comments(flashcard_id: str):
+    result = list(comments.find({"flashcard_id": flashcard_id}).sort("created_at", -1))
+    for r in result:
+        r["_id"] = str(r["_id"])
     return result
+
+@router.delete("/comments/{comment_id}")
+def delete_comment(comment_id: str):
+    result = comments.delete_one({"_id": ObjectId(comment_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    return {"message": "Comment deleted"}
