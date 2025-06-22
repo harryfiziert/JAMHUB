@@ -21,26 +21,35 @@ const Login = () => {
 
     return () => unsubscribe();
   }, [navigate]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
+  
     let emailToUse = emailOrUsername;
-
+  
     try {
-      // Falls Eingabe kein @ enthält → ist es vermutlich ein Benutzername
+      // Benutzername → E-Mail auflösen
       if (!emailOrUsername.includes("@")) {
         const res = await fetch(`http://localhost:8000/user/by-username/${emailOrUsername}`);
-        if (!res.ok) {
-          throw new Error("Benutzername nicht gefunden");
-        }
+        if (!res.ok) throw new Error("Benutzername nicht gefunden");
         const data = await res.json();
         emailToUse = data.email;
       }
-
+  
+      // Firebase Login
       await signInWithEmailAndPassword(auth, emailToUse, password);
+      const firebaseUser = auth.currentUser;
+  
+      // MongoDB-User über E-Mail holen
+      const userRes = await fetch(`http://localhost:8000/user/by-email/${firebaseUser.email}`);
+      if (!userRes.ok) throw new Error("Benutzer nicht gefunden");
+      const userData = await userRes.json();
+  
+      // 🧠 Jetzt speichern!
+      localStorage.setItem("userId", userData._id);
+      localStorage.setItem("username", userData.username);
+  
       // Weiterleitung erfolgt durch useEffect
     } catch (error) {
       setMessage("Login fehlgeschlagen: " + error.message);

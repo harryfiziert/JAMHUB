@@ -39,3 +39,10 @@ def get_user(uid: str):
     return user
 
 
+@router.get("/user/by-email/{email}")
+async def get_user_by_email(email: str):
+    user = collection.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user["_id"] = str(user["_id"])
+    return user

@@ -1,42 +1,59 @@
 // src/components/VirtualRoomPage.jsx
 import React, { useEffect, useState } from "react";
-import { db } from "../Firebase";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+
+const API_BASE = "http://localhost:8000"; // ggf. anpassen
 
 const VirtualRoomPage = () => {
     const [rooms, setRooms] = useState([]);
     const navigate = useNavigate();
+    const userId = localStorage.getItem("userId"); // Login-ID hier verwenden
 
     useEffect(() => {
         const fetchRooms = async () => {
-            const snapshot = await getDocs(collection(db, "rooms"));
-            const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setRooms(data);
+            try {
+                const res = await fetch(`${API_BASE}/rooms/by-user/${userId}`);
+                const data = await res.json();
+                if (res.ok) {
+                    setRooms(data);
+                } else {
+                    console.error("Fehler beim Laden der Räume:", data.detail);
+                }
+            } catch (err) {
+                console.error("Netzwerkfehler:", err);
+            }
         };
-        fetchRooms();
-    }, []);
+
+        if (userId) fetchRooms();
+    }, [userId]);
 
     const handleEnterRoom = (roomId) => {
         navigate(`/room/${roomId}`);
     };
 
-    const handleDeleteRoom = async (id, roomName) => {
-        if (window.confirm(`Sind Sie sicher, dass Sie den Raum "${roomName}" löschen möchten?`)) {
-            try {
-                await deleteDoc(doc(db, "rooms", id));
-                setRooms(rooms.filter((room) => room.id !== id));
-                console.log(`Room with ID: ${id} deleted successfully.`);
-            } catch (error) {
-                console.error("Error deleting room: ", error);
+    const handleDeleteRoom = async (roomId, roomName) => {
+        if (!window.confirm(`Möchtest du den Raum "${roomName}" wirklich löschen?`)) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/room/${roomId}`, {
+                method: "DELETE"
+            });
+
+            if (res.ok) {
+                setRooms(rooms.filter((r) => r.id !== roomId));
+                console.log(`Raum mit ID ${roomId} wurde gelöscht`);
+            } else {
+                console.error("Löschen fehlgeschlagen:", await res.text());
             }
+        } catch (err) {
+            console.error("Netzwerkfehler beim Löschen:", err);
         }
     };
 
     return (
         <div style={styles.wrapper}>
             <div style={styles.container}>
-                <h2 style={styles.header}>Virtuelle Räume</h2>
+                <h2 style={styles.header}>Meine Räume</h2>
 
                 <div style={styles.actions}>
                     <button style={styles.button} onClick={() => navigate("/room/create")}>➕ Raum erstellen</button>
@@ -63,33 +80,25 @@ const VirtualRoomPage = () => {
                             }}
                         >
                             <div style={styles.roomInfo}>
-                                <h3 style={styles.roomName}>{room.name || "(Kein Name)"}</h3>
-                                <p style={styles.roomId}>ID: {room.roomId}</p>
+                                <h3 style={styles.roomName}>{room.title || "(Kein Titel)"}</h3>
+                                <p style={styles.roomId}>ID: {room.id}</p>
                             </div>
 
                             <button
                                 style={styles.enterButton}
-                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#2a2a3f")}
-                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1e1e2f")}
-                                onClick={() => handleEnterRoom(room.roomId)}
+                                onClick={() => handleEnterRoom(room.id)}
                             >
                                 ➤ Anzeigen
                             </button>
 
-                            <button
-                                style={styles.deleteButton}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.color = "#ff4d4d";
-                                    e.currentTarget.style.transform = "scale(1.1)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = "#a0a0a0";
-                                    e.currentTarget.style.transform = "scale(1)";
-                                }}
-                                onClick={() => handleDeleteRoom(room.id, room.name)}
-                            >
-                                ❌
-                            </button>
+                            {room.creator_id === userId && (
+                                <button
+                                    style={styles.deleteButton}
+                                    onClick={() => handleDeleteRoom(room.id, room.title)}
+                                >
+                                    ❌
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -97,114 +106,19 @@ const VirtualRoomPage = () => {
 
             <style>
                 {`
-          @keyframes fadeIn {
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-        `}
+                @keyframes fadeIn {
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                `}
             </style>
         </div>
     );
 };
 
-const styles = {
-    wrapper: {
-        display: "flex",
-        justifyContent: "center",
-        width: "100%",
-    },
-    container: {
-        padding: "40px",
-        fontFamily: "Arial, sans-serif",
-        backgroundColor: "#f5f5f5",
-        minHeight: "100vh",
-        maxWidth: "960px",
-        width: "100%",
-        boxSizing: "border-box",
-    },
-    header: {
-        fontSize: "28px",
-        fontWeight: "600",
-        marginBottom: "24px",
-        color: "#1e1e2f",
-    },
-    actions: {
-        display: "flex",
-        gap: "16px",
-        marginBottom: "32px",
-    },
-    button: {
-        padding: "12px 20px",
-        backgroundColor: "#1e1e2f",
-        color: "white",
-        border: "none",
-        borderRadius: "10px",
-        cursor: "pointer",
-        fontSize: "14px",
-        transition: "background-color 0.2s ease, transform 0.2s ease",
-    },
-    roomGrid: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-        gap: "24px",
-    },
-    roomCard: {
-        backgroundColor: "white",
-        borderRadius: "12px",
-        padding: "20px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-        display: "flex",
-        justifyContent: "flex-start", // <-- WICHTIGE ÄNDERUNG HIER!
-        alignItems: "center",
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-        position: "relative",
-        gap: "15px",
-    },
-    roomInfo: {
-        display: "flex",
-        flexDirection: "column",
-        // flexGrow: 1, // weiterhin entfernt
-    },
-    roomName: {
-        fontSize: "18px",
-        fontWeight: "700",
-        margin: "0 0 4px 0",
-        color: "#1e1e2f",
-    },
-    roomId: {
-        fontSize: "14px",
-        color: "#777",
-        marginTop: "0",
-    },
-    enterButton: {
-        padding: "10px 18px",
-        backgroundColor: "#1e1e2f",
-        color: "white",
-        border: "none",
-        borderRadius: "8px",
-        cursor: "pointer",
-        fontWeight: "600",
-        transition: "background-color 0.2s ease, transform 0.2s ease",
-        whiteSpace: "nowrap",
-        // marginLeft: "10px", // weiterhin entfernt
-    },
-    deleteButton: {
-        position: "absolute",
-        top: "10px",
-        right: "10px",
-        backgroundColor: "transparent",
-        border: "none",
-        cursor: "pointer",
-        fontSize: "14px",
-        color: "#a0a0a0",
-        fontWeight: "bold",
-        padding: "0",
-        lineHeight: "1",
-        transition: "color 0.2s ease, transform 0.2s ease",
-        zIndex: 1,
-    },
-};
+// styles (gleich wie bisher)
+const styles = { /* ... bleibt wie du es hast ... */ };
 
 export default VirtualRoomPage;

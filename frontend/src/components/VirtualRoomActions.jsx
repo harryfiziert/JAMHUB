@@ -1,7 +1,7 @@
 // src/components/VirtualRoomActions.jsx
 import React, { useState } from "react";
-import { db } from "../Firebase";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+
+const API_BASE = "http://localhost:8000"; // <-- Backend-Adresse 
 
 const VirtualRoomActions = () => {
     const [mode, setMode] = useState("create");
@@ -10,55 +10,68 @@ const VirtualRoomActions = () => {
     const [password, setPassword] = useState("");
     const [status, setStatus] = useState(null);
 
+    const creatorId = localStorage.getItem("userId");
+
+    // Raum erstellen über FastAPI
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
-            const generatedId = crypto.randomUUID().slice(0, 6);
-            await addDoc(collection(db, "rooms"), {
-                roomId: generatedId,
-                name: roomName,
-                password,
-                createdAt: new Date().toISOString(),
+            const res = await fetch(`${API_BASE}/room`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    creator_id: creatorId,
+                    title: roomName,
+                    description: "", // optional erweiterbar
+                    password: password
+                })
             });
-            setStatus(`✅ Raum '${roomName}' erfolgreich erstellt (ID: ${generatedId})`);
-            setRoomName("");
-            setPassword("");
+
+            const data = await res.json();
+            if (res.ok) {
+                setStatus(`✅ Raum '${roomName}' erfolgreich erstellt (ID: ${data.id})`);
+                setRoomName("");
+                setPassword("");
+            } else {
+                setStatus("❌ Fehler beim Erstellen: " + data.detail);
+            }
         } catch (error) {
             console.error("Fehler beim Erstellen des Raums:", error);
-            setStatus("❌ Fehler beim Erstellen");
+            setStatus("❌ Netzwerkfehler beim Erstellen");
         }
     };
 
+    // Raum beitreten über FastAPI
     const handleJoin = async (e) => {
         e.preventDefault();
         try {
-            const q = query(
-                collection(db, "rooms"),
-                where("roomId", "==", roomId),
-                where("password", "==", password)
-            );
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) {
-                setStatus("✅ Beitritt erfolgreich!");
+            const res = await fetch(`${API_BASE}/room/${roomId}`);
+            const data = await res.json();
+
+            if (res.ok) {
+                if (data.password === password) {
+                    // jetzt User zum Raum hinzufügen
+                    const addUserRes = await fetch(`${API_BASE}/room/${roomId}/add-user/${creatorId}`, {
+                        method: "POST"
+                    });
+                    const addUserData = await addUserRes.json();
+
+                    if (addUserRes.ok) {
+                        setStatus("✅ Beitritt erfolgreich!");
+                    } else {
+                        setStatus("⚠️ Beigetreten, aber User nicht hinzugefügt: " + addUserData.message);
+                    }
+                } else {
+                    setStatus("❌ Falsches Passwort");
+                }
             } else {
-                setStatus("❌ Ungültige Raum-ID oder Passwort");
+                setStatus("❌ Raum nicht gefunden");
             }
         } catch (error) {
             console.error("Fehler beim Beitritt:", error);
-            setStatus("❌ Fehler beim Beitritt");
-        }
-    };
-
-    const handleTestWrite = async () => {
-        try {
-            const testDocRef = await addDoc(collection(db, "testWrite"), {
-                message: "Testeintrag",
-                timestamp: new Date().toISOString(),
-            });
-            alert("✅ Firestore-Test erfolgreich! Dokument-ID: " + testDocRef.id);
-        } catch (err) {
-            console.error("❌ Firestore-Test fehlgeschlagen:", err);
-            alert("❌ Firestore-Test fehlgeschlagen. Siehe Konsole.");
+            setStatus("❌ Netzwerkfehler beim Beitritt");
         }
     };
 
@@ -122,18 +135,6 @@ const VirtualRoomActions = () => {
             )}
 
             {status && <p style={{ marginTop: "20px", fontWeight: "bold" }}>{status}</p>}
-
-            <button onClick={handleTestWrite} style={{
-                marginTop: "30px",
-                padding: "10px",
-                backgroundColor: "#999",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer"
-            }}>
-                🔧 Firestore-Test
-            </button>
         </div>
     );
 };
