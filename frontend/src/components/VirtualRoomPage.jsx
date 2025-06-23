@@ -1,4 +1,3 @@
-// src/components/VirtualRoomPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,7 +6,7 @@ const API_BASE = "http://localhost:8000"; // ggf. anpassen
 const VirtualRoomPage = () => {
     const [rooms, setRooms] = useState([]);
     const navigate = useNavigate();
-    const userId = localStorage.getItem("userId"); // Login-ID hier verwenden
+    const userId = localStorage.getItem("userId");
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -106,20 +105,19 @@ const VirtualRoomPage = () => {
 
             <style>
                 {`
-                @keyframes fadeIn {
-                    to {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                }
-                `}
+          @keyframes fadeIn {
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+        `}
             </style>
         </div>
     );
 };
 
-
-const styles = { 
+const styles = {
     wrapper: {
         display: "flex",
         justifyContent: "center",
@@ -128,7 +126,7 @@ const styles = {
     container: {
         padding: "40px",
         fontFamily: "Arial, sans-serif",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "var(--bg-color)",
         minHeight: "100vh",
         maxWidth: "960px",
         width: "100%",
@@ -138,7 +136,7 @@ const styles = {
         fontSize: "28px",
         fontWeight: "600",
         marginBottom: "24px",
-        color: "#1e1e2f",
+        color: "var(--text-color)",
     },
     actions: {
         display: "flex",
@@ -147,8 +145,8 @@ const styles = {
     },
     button: {
         padding: "12px 20px",
-        backgroundColor: "#1e1e2f",
-        color: "white",
+        backgroundColor: "var(--button-bg)",
+        color: "var(--text-color)",
         border: "none",
         borderRadius: "10px",
         cursor: "pointer",
@@ -161,12 +159,12 @@ const styles = {
         gap: "24px",
     },
     roomCard: {
-        backgroundColor: "white",
+        backgroundColor: "var(--card-bg)",
         borderRadius: "12px",
         padding: "20px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
         display: "flex",
-        justifyContent: "flex-start", // <-- WICHTIGE ÄNDERUNG HIER!
+        justifyContent: "flex-start",
         alignItems: "center",
         transition: "transform 0.3s ease, box-shadow 0.3s ease",
         position: "relative",
@@ -175,30 +173,29 @@ const styles = {
     roomInfo: {
         display: "flex",
         flexDirection: "column",
-        // flexGrow: 1, // weiterhin entfernt
     },
     roomName: {
         fontSize: "18px",
         fontWeight: "700",
         margin: "0 0 4px 0",
-        color: "#1e1e2f",
+        color: "var(--text-color)",
     },
     roomId: {
         fontSize: "14px",
-        color: "#777",
+        color: "var(--text-color)",
         marginTop: "0",
+        opacity: 0.7,
     },
     enterButton: {
         padding: "10px 18px",
-        backgroundColor: "#1e1e2f",
-        color: "white",
+        backgroundColor: "var(--button-bg)",
+        color: "var(--text-color)",
         border: "none",
         borderRadius: "8px",
         cursor: "pointer",
         fontWeight: "600",
         transition: "background-color 0.2s ease, transform 0.2s ease",
         whiteSpace: "nowrap",
-        // marginLeft: "10px", // weiterhin entfernt
     },
     deleteButton: {
         position: "absolute",

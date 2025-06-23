@@ -36,16 +36,13 @@ const Dashboard = () => {
     const [loadingBadges, setLoadingBadges] = useState(true);
     const [errorBadges, setErrorBadges] = useState(null);
 
-    // Assuming a static user_id for now. In a real app, this would come from auth context.
-    const userId = "your_user_id_here"; // ⚠️ IMPORTANT: Replace with actual user ID
+    const userId = "testuser2";
 
     useEffect(() => {
         const fetchBadges = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/badges/${userId}`); // ✅ Adjust URL if needed
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const response = await fetch(`http://localhost:8000/badges/${userId}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 setBadgesData(data);
             } catch (error) {
@@ -60,245 +57,141 @@ const Dashboard = () => {
     }, [userId]);
 
     return (
-        <div style={styles.container}>
-            {/* Header */}
-            <div style={styles.header}>
-                <div style={styles.greetingAndBadges}> {/* New container for greeting and badges */}
-                    <h1 style={styles.greeting}>Welcome back, Georg</h1>
-                    {/* Badges display in header */}
-                    {loadingBadges && <p style={styles.headerBadgeText}>Loading badges...</p>}
-                    {errorBadges && <p style={{ ...styles.headerBadgeText, color: 'red' }}>Error: {errorBadges.message}</p>}
-                    {badgesData && badgesData.badges.length > 0 && (
-                        <div style={styles.headerBadgesContainer}>
+        <div style={{
+            padding: "32px",
+            backgroundColor: "var(--bg-color)",
+            color: "var(--text-color)",
+            minHeight: "100vh",
+            width: "100%",
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: 1,
+            fontFamily: "Arial, sans-serif"
+        }}>
+            <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "36px"
+            }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                    <h1 style={{ fontSize: "28px", fontWeight: "600", margin: 0 }}>
+                        Welcome back, Georg
+                    </h1>
+                    {loadingBadges && <p style={{ fontSize: "14px" }}>Loading badges...</p>}
+                    {errorBadges && <p style={{ fontSize: "14px", color: "red" }}>Error: {errorBadges.message}</p>}
+                    {badgesData?.badges?.length > 0 && (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                             {badgesData.badges.map((badge, index) => (
-                                <span key={index} style={styles.headerBadgeItem}>
-                                    {badge}
-                                </span>
+                                <span key={index} style={{
+                                    backgroundColor: "var(--button-bg)",
+                                    padding: "5px 10px",
+                                    borderRadius: "15px",
+                                    fontSize: "12px",
+                                    fontWeight: "bold",
+                                    color: "var(--text-color)",
+                                    whiteSpace: "nowrap"
+                                }}>{badge}</span>
                             ))}
                         </div>
                     )}
                 </div>
 
-                <div style={styles.headerRight}>
-                    <div style={styles.searchWrapper}>
-                        <FiSearch style={styles.searchIcon} />
+                <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+                    <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        backgroundColor: "var(--card-bg)",
+                        borderRadius: "30px",
+                        padding: "10px 16px",
+                        height: "40px"
+                    }}>
+                        <FiSearch style={{ marginRight: "8px", color: "var(--text-color)", fontSize: "16px" }} />
                         <input
                             type="text"
                             placeholder="Search"
-                            style={styles.searchInput}
+                            style={{
+                                border: "none",
+                                background: "transparent",
+                                outline: "none",
+                                fontSize: "14px",
+                                width: "160px",
+                                color: "var(--text-color)"
+                            }}
                         />
                     </div>
 
-                    <div style={styles.profile}>
-                        <img src={profilePic} alt="profile" style={styles.avatar} />
-                        <div style={styles.profileText}>
-                            <span>Georg Mansky -</span>
-                            <br />
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <img src={profilePic} alt="profile" style={{ width: "42px", height: "42px", borderRadius: "50%" }} />
+                        <div style={{ fontSize: "14px", lineHeight: "1.2" }}>
+                            <span>Georg Mansky -</span><br />
                             <span>Kummert</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Card Grid */}
-            <div style={styles.grid}>
-                <div style={{ ...styles.card, backgroundColor: "#1e1e2f", color: "white" }}>
+            <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                gap: "24px",
+                marginBottom: "40px"
+            }}>
+                <div className="card">
                     <h3 style={{ marginBottom: "10px" }}>FlashCards Set</h3>
-                    <button style={styles.button} onClick={() => navigate("/flashcards")}>
-                        Bearbeiten
-                    </button>
+                    <button onClick={() => navigate("/flashcards")}>Bearbeiten</button>
                 </div>
 
-                <div style={styles.card}>
-                    <h4 style={styles.cardTitle}>Tägliche Lernzeit</h4>
-                    <p style={styles.bigText}>12.302</p>
-                    <small style={styles.cardSubText}>+12.7% | +1.2k this week</small>
+                <div className="card">
+                    <h4>Tägliche Lernzeit</h4>
+                    <p style={{ fontSize: "32px", fontWeight: "bold", margin: "10px 0" }}>12.302</p>
+                    <small>+12.7% | +1.2k this week</small>
                 </div>
 
-                <div style={styles.card}>
-                    <h4 style={styles.cardTitle}>Anzahl beantworteter Karten</h4>
-                    <p style={styles.bigText}>963</p>
+                <div className="card">
+                    <h4>Anzahl beantworteter Karten</h4>
+                    <p style={{ fontSize: "32px", fontWeight: "bold", margin: "10px 0" }}>963</p>
                 </div>
             </div>
 
-            {/* Chart */}
-            <div style={styles.chartBox}>
-                <div style={styles.chartHeader}>
+            <div className="dashboard-box" style={{ padding: "24px" }}>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "10px"
+                }}>
                     <h3>Lernfortschritt</h3>
-                    <select style={styles.dropdown}>
+                    <select style={{
+                        padding: "6px 10px",
+                        borderRadius: "6px",
+                        border: "1px solid var(--border-color)",
+                        backgroundColor: "var(--card-bg)",
+                        color: "var(--text-color)"
+                    }}>
                         <option>Last 14 Days</option>
                         <option>Last 7 Days</option>
                     </select>
                 </div>
-                <div style={styles.chart}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart
-                            data={chartData}
-                            margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="day" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="earnings" fill="#333" />
-                            <Bar dataKey="costs" fill="#aaa" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
+                <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                        <XAxis dataKey="day" stroke="var(--text-color)" />
+                        <YAxis stroke="var(--text-color)" />
+                        <Tooltip contentStyle={{
+                            backgroundColor: "var(--card-bg)",
+                            borderColor: "var(--border-color)",
+                            color: "var(--text-color)"
+                        }} />
+                        <Legend />
+                        <Bar dataKey="earnings" fill="var(--chart-bar-earnings)" />
+                        <Bar dataKey="costs" fill="var(--chart-bar-costs)" />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );
-};
-
-const styles = {
-    container: {
-        padding: "32px",
-        fontFamily: "Arial, sans-serif",
-        backgroundColor: "#f6f6f6",
-        minHeight: "100vh",
-        width: "100%",
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-        flexGrow: 1,
-    },
-    header: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "36px",
-    },
-    greetingAndBadges: { // New style for the container holding greeting and badges
-        display: "flex",
-        alignItems: "center",
-        gap: "20px", // Space between greeting and badges
-    },
-    greeting: {
-        fontSize: "28px",
-        fontWeight: "600",
-        margin: 0,
-        color: "#1e1e2f",
-    },
-    headerRight: {
-        display: "flex",
-        alignItems: "center",
-        gap: "24px",
-    },
-    searchWrapper: {
-        display: "flex",
-        alignItems: "center",
-        backgroundColor: "#efefef",
-        borderRadius: "30px",
-        padding: "10px 16px",
-        height: "40px",
-    },
-    searchIcon: {
-        marginRight: "8px",
-        color: "#999",
-        fontSize: "16px",
-    },
-    searchInput: {
-        border: "none",
-        background: "transparent",
-        outline: "none",
-        fontSize: "14px",
-        width: "160px",
-        color: "#333",
-    },
-    profile: {
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-    },
-    avatar: {
-        width: "42px",
-        height: "42px",
-        borderRadius: "50%",
-        objectFit: "cover",
-    },
-    profileText: {
-        fontSize: "14px",
-        lineHeight: "1.2",
-        color: "#333",
-    },
-    grid: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-        gap: "24px",
-        marginBottom: "40px",
-    },
-    card: {
-        padding: "20px",
-        borderRadius: "16px",
-        backgroundColor: "#f4f4f4",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    },
-    button: {
-        padding: "10px 16px",
-        backgroundColor: "#fff",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        cursor: "pointer",
-        color: "#333",
-        fontWeight: "500",
-    },
-    bigText: {
-        fontSize: "32px",
-        fontWeight: "bold",
-        margin: "10px 0",
-        color: "#1e1e2f",
-    },
-    cardTitle: {
-        fontSize: "16px",
-        fontWeight: "600",
-        marginBottom: "6px",
-        color: "#1e1e2f",
-    },
-    cardSubText: {
-        color: "#666",
-    },
-    chartBox: {
-        backgroundColor: "#fff",
-        padding: "20px",
-        borderRadius: "16px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    },
-    chartHeader: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "10px",
-    },
-    dropdown: {
-        padding: "6px 10px",
-        borderRadius: "6px",
-        border: "1px solid #ccc",
-    },
-    chart: {
-        width: "100%",
-        height: "250px",
-    },
-    // New styles for badges in header
-    headerBadgesContainer: {
-        display: "flex",
-        gap: "8px", // Space between individual badges
-        alignItems: "center",
-    },
-    headerBadgeItem: {
-        backgroundColor: "#e0e0e0", // Light gray background for badges
-        padding: "5px 10px",
-        borderRadius: "15px",
-        fontSize: "12px",
-        fontWeight: "bold",
-        color: "#333",
-        whiteSpace: "nowrap", // Prevent badges from wrapping
-    },
-    headerBadgeText: { // For loading/error text in header
-        fontSize: "14px",
-        color: "#666",
-        margin: 0,
-    }
 };
 
 export default Dashboard;

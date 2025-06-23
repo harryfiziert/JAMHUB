@@ -30,15 +30,15 @@ const ExamSimulation = () => {
     };
 
     return (
-        <div style={{ padding: "32px", color: "#fff" }}>
+        <div className="exam-container" style={{ padding: "32px" }}>
             <h2 style={{ marginBottom: "24px" }}>📘 Exam Simulation</h2>
 
             {cards.length === 0 && (
-                <p style={{ color: "#aaa" }}>Keine Karten gefunden.</p>
+                <p style={{ color: "var(--text-color)" }}>Keine Karten gefunden.</p>
             )}
 
             {cards.map((card, index) => (
-                <div key={card._id} style={{ marginBottom: "24px" }}>
+                <div key={card._id} className="exam-question">
                     <strong style={{ display: "block", marginBottom: "8px" }}>
                         Q{index + 1}: {card.question}
                     </strong>
@@ -50,7 +50,9 @@ const ExamSimulation = () => {
                             width: "100%",
                             padding: "10px",
                             borderRadius: "4px",
-                            border: "1px solid #ccc",
+                            border: "1px solid var(--border-color)",
+                            color: "var(--text-color)",
+                            backgroundColor: "var(--bg-color)"
                         }}
                     />
                     {results[card._id] !== undefined && (
@@ -71,20 +73,7 @@ const ExamSimulation = () => {
 
             {cards.length > 0 && (
                 <div style={{ textAlign: "center", marginTop: "32px" }}>
-                    <button
-                        onClick={handleSubmit}
-                        style={{
-                            padding: "12px 24px",
-                            backgroundColor: "#4f46e5",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "6px",
-                            fontSize: "16px",
-                            cursor: "pointer"
-                        }}
-                    >
-                        Submit
-                    </button>
+                    <button onClick={handleSubmit}>Submit</button>
                 </div>
             )}
         </div>
