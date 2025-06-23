@@ -18,7 +18,7 @@
 # room_id = room_data["id"]
 #
 # # User hinzufügen
-# res_add = requests.post(f"{BASE}/room/{room_id}/add-user/uid456")
+# res_add = requests.patch(f"{BASE}/room/{room_id}/add-user/uid456")
 # print("User hinzugefügt:", res_add.json())
 #
 # # User entfernen
