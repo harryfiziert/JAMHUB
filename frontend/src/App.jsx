@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/SideBar";
 import Register from "./components/Register";
 import Login from "./components/Login";
@@ -14,7 +14,7 @@ import ExamSimulation from "./components/ExamSimulation";
 import Upload from "./components/Upload";
 import { auth } from "./Firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import RoomView from "./components/RoomView"; // ✅ neue Komponente importieren
+import RoomView from "./components/RoomView"; // ✅ Neue Komponente
 
 function App() {
     const [user, setUser] = useState(undefined); // undefined = loading
@@ -45,6 +45,8 @@ function App() {
                         display: "flex",
                         flexDirection: "column",
                         overflowX: "hidden",
+                        backgroundColor: "var(--bg-color)", // ✅ Wichtig für Mode
+                        color: "var(--text-color)",           // ✅ Optional, konsistent
                     }}
                 >
                     <Routes>
@@ -133,8 +135,6 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
-
-                        {/* ✅ Neue Raum-Detailseite */}
                         <Route
                             path="/room/:roomId"
                             element={
@@ -143,6 +143,9 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
+
+                        {/* Startseite umleiten */}
+                        <Route path="/" element={<Navigate to="/login" />} />
                     </Routes>
                 </div>
             </div>

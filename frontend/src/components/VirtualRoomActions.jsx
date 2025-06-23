@@ -1,7 +1,6 @@
-// src/components/VirtualRoomActions.jsx
 import React, { useState } from "react";
 
-const API_BASE = "http://localhost:8000"; // <-- Backend-Adresse 
+const API_BASE = "http://localhost:8000"; // <-- Backend-Adresse
 
 const VirtualRoomActions = () => {
     const [mode, setMode] = useState("create");
@@ -12,7 +11,6 @@ const VirtualRoomActions = () => {
 
     const creatorId = localStorage.getItem("userId");
 
-    // Raum erstellen über FastAPI
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
@@ -24,7 +22,7 @@ const VirtualRoomActions = () => {
                 body: JSON.stringify({
                     creator_id: creatorId,
                     title: roomName,
-                    description: "", // optional erweiterbar
+                    description: "",
                     password: password
                 })
             });
@@ -43,7 +41,6 @@ const VirtualRoomActions = () => {
         }
     };
 
-    // Raum beitreten über FastAPI
     const handleJoin = async (e) => {
         e.preventDefault();
         try {
@@ -52,7 +49,6 @@ const VirtualRoomActions = () => {
 
             if (res.ok) {
                 if (data.password === password) {
-                    // jetzt User zum Raum hinzufügen
                     const addUserRes = await fetch(`${API_BASE}/room/${roomId}/add-user/${creatorId}`, {
                         method: "POST"
                     });
@@ -134,7 +130,7 @@ const VirtualRoomActions = () => {
                 </form>
             )}
 
-            {status && <p style={{ marginTop: "20px", fontWeight: "bold" }}>{status}</p>}
+            {status && <p style={styles.status}>{status}</p>}
         </div>
     );
 };
@@ -144,9 +140,10 @@ const styles = {
         padding: "40px",
         maxWidth: "500px",
         margin: "0 auto",
-        backgroundColor: "#f9f9f9",
+        backgroundColor: "var(--card-bg)",
         borderRadius: "12px",
         boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+        color: "var(--text-color)",
     },
     tabButtons: {
         display: "flex",
@@ -156,16 +153,17 @@ const styles = {
     button: {
         flex: 1,
         padding: "10px",
-        backgroundColor: "#eee",
-        border: "1px solid #ccc",
+        backgroundColor: "var(--button-bg-light)",
+        color: "var(--text-color)",
+        border: "1px solid var(--border-color)",
         cursor: "pointer",
         borderRadius: "6px",
     },
     activeButton: {
         flex: 1,
         padding: "10px",
-        backgroundColor: "#1e1e2f",
-        color: "white",
+        backgroundColor: "var(--button-bg)",
+        color: "var(--button-text-color)",
         border: "none",
         cursor: "pointer",
         borderRadius: "6px",
@@ -181,17 +179,23 @@ const styles = {
     input: {
         padding: "10px",
         borderRadius: "8px",
-        border: "1px solid #ccc",
+        border: "1px solid var(--border-color)",
         fontSize: "14px",
+        backgroundColor: "var(--input-bg)",
+        color: "var(--text-color)",
     },
     submitButton: {
         padding: "10px",
-        backgroundColor: "#1e1e2f",
-        color: "white",
+        backgroundColor: "var(--button-bg)",
+        color: "var(--button-text-color)",
         border: "none",
         borderRadius: "8px",
         cursor: "pointer",
     },
+    status: {
+        marginTop: "20px",
+        fontWeight: "bold",
+    }
 };
 
 export default VirtualRoomActions;

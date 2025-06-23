@@ -9,20 +9,18 @@ const RoomDetail = () => {
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState("");
 
-  // Lade Raum-Infos
   useEffect(() => {
     fetch(`http://localhost:8000/room/${roomId}`)
-      .then((res) => res.json())
-      .then((data) => setRoom(data))
-      .catch((err) => console.error("Fehler beim Laden des Raums:", err));
+        .then((res) => res.json())
+        .then((data) => setRoom(data))
+        .catch((err) => console.error("Fehler beim Laden des Raums:", err));
   }, [roomId]);
 
-  // Lade Flashcards
   useEffect(() => {
     fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
-      .then((res) => res.json())
-      .then((data) => setFlashcards(data))
-      .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
+        .then((res) => res.json())
+        .then((data) => setFlashcards(data))
+        .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
   }, [roomId]);
 
   const handleFileChange = (e) => {
@@ -52,30 +50,32 @@ const RoomDetail = () => {
   };
 
   return (
-    <div style={styles.wrapper}>
-      <h2>Raum: {room?.title || roomId}</h2>
-      <p>{room?.description}</p>
+      <div style={styles.wrapper}>
+        <h2 style={styles.heading}>Raum: {room?.title || roomId}</h2>
+        <p style={styles.text}>{room?.description}</p>
 
-      <div style={styles.uploadBox}>
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={handleUpload} style={styles.uploadButton}>PDF hochladen & Flashcards erstellen</button>
-        {status && <p>{status}</p>}
+        <div style={styles.uploadBox}>
+          <input type="file" onChange={handleFileChange} style={styles.input} />
+          <button onClick={handleUpload} style={styles.uploadButton}>
+            PDF hochladen & Flashcards erstellen
+          </button>
+          {status && <p style={styles.status}>{status}</p>}
+        </div>
+
+        <h3 style={styles.subheading}>Flashcards in diesem Raum</h3>
+        {flashcards.length === 0 ? (
+            <p style={styles.text}>Keine Flashcards vorhanden.</p>
+        ) : (
+            <ul>
+              {flashcards.map((card, idx) => (
+                  <li key={idx} style={styles.cardItem}>
+                    <strong>Q:</strong> {card.question} <br />
+                    <strong>A:</strong> {card.answer}
+                  </li>
+              ))}
+            </ul>
+        )}
       </div>
-
-      <h3>Flashcards in diesem Raum</h3>
-      {flashcards.length === 0 ? (
-        <p>Keine Flashcards vorhanden.</p>
-      ) : (
-        <ul>
-          {flashcards.map((card, idx) => (
-            <li key={idx}>
-              <strong>Q:</strong> {card.question} <br />
-              <strong>A:</strong> {card.answer}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   );
 };
 
@@ -84,6 +84,22 @@ const styles = {
     padding: "40px",
     maxWidth: "800px",
     margin: "0 auto",
+    backgroundColor: "var(--bg-color)",
+    color: "var(--text-color)",
+  },
+  heading: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    marginBottom: "12px",
+  },
+  subheading: {
+    fontSize: "20px",
+    fontWeight: "bold",
+    marginTop: "32px",
+  },
+  text: {
+    fontSize: "16px",
+    marginBottom: "16px",
   },
   uploadBox: {
     margin: "20px 0",
@@ -93,11 +109,20 @@ const styles = {
   },
   uploadButton: {
     padding: "10px",
-    backgroundColor: "#1e1e2f",
-    color: "white",
+    backgroundColor: "var(--button-bg)",
+    color: "var(--button-text-color)",
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
+  },
+  input: {
+    color: "var(--text-color)",
+  },
+  status: {
+    fontSize: "14px",
+  },
+  cardItem: {
+    marginBottom: "10px",
   },
 };
 
