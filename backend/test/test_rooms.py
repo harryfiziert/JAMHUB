@@ -22,13 +22,13 @@
 # print("User hinzugefügt:", res_add.json())
 #
 # # User entfernen
-# res_remove = requests.post(f"{BASE}/room/{room_id}/remove-user/uid456")
+# res_remove = requests.delete(f"{BASE}/room/{room_id}/remove-user/uid456")
 # print("User entfernt:", res_remove.json())
 #
 # # Räume eines Users abrufen
 # res_by_user = requests.get(f"{BASE}/rooms/by-user/uid123")
 # print("Räume für uid123:", res_by_user.json())
 #
-# # Raum löschen
-# res_delete = requests.delete(f"{BASE}/room/{room_id}")
-# print("Raum gelöscht:", res_delete.json())
+# # # Raum löschen
+# # res_delete = requests.delete(f"{BASE}/room/{room_id}")
+# # print("Raum gelöscht:", res_delete.json())

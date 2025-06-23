@@ -54,7 +54,7 @@ async def add_user_to_room(code: str, uid: str):
     return {"message": f"User {uid} added to room {code}"}
 
 # User aus Raum entfernen
-@router.post("/room/{code}/remove-user/{uid}")
+@router.delete("/room/{code}/remove-user/{uid}")
 async def remove_user_from_room(code: str, uid: str):
     room = collection.find_one({"id": code})
     if not room:

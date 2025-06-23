@@ -14,3 +14,7 @@ Der Server läuft dann unter:
 http://127.0.0.1:8000
 
 http://127.0.0.1:8000/docs (Swagger UI)
+
+###fronted
+cd .\frontend\ 
+run dev
