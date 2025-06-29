@@ -1,0 +1,55 @@
+.learn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.flashcard {
+    width: 100%;
+    max-width: 500px;
+    background: #fffdf8;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-around;
+    margin: 1rem 0;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: #004aad;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0063d1;
+}
+
+.learned-button {
+    margin-top: 1rem;
+    background: #28a745;
+}
+
+.learned-button:hover {
+    background: #1e7e34;
+}
+
+.progress-indicator {
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+.learn-finished {
+    text-align: center;
+    margin-top: 3rem;
+    font-size: 1.5rem;
+    color: #28a745;
+}
