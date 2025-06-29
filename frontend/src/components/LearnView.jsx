@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import "./LearnView.css"; // optional für extra Styles
 
 function LearnView() {
     const { roomId } = useParams();
@@ -34,9 +33,13 @@ function LearnView() {
 
     const handleMarkAsLearned = async () => {
         const currentCard = cards[currentIndex];
-        await fetch(`/flashcards/${currentCard._id}/mark-learned`, {
+        console.log("currentCard", currentCard);
+        console.log("currentCard._id:", currentCard._id);
+
+        await fetch(`/flashcards/${currentCard._id.$oid}/mark-learned`, {
             method: "PATCH",
         });
+
 
         const updatedCards = cards.filter((_, i) => i !== currentIndex);
         setCards(updatedCards);
@@ -45,25 +48,50 @@ function LearnView() {
     };
 
     if (cards.length === 0) {
-        return <div className="learn-finished">Alle Karten gelernt 🎉</div>;
+        return (
+            <div style={{ textAlign: "center", marginTop: "2rem", fontSize: "1.5rem" }}>
+                Alle Karten gelernt 🎉
+            </div>
+        );
     }
 
     const currentCard = cards[currentIndex];
 
     return (
-        <div className="learn-container">
-            <div className="flashcard">
-                <h3>Frage</h3>
-                <p>{currentCard.question}</p>
+        <div
+            style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "80vh",
+                backgroundColor: "var(--background-color, #1e1e1e)",
+                color: "var(--text-color, #fff)",
+            }}
+        >
+            <div
+                style={{
+                    backgroundColor: "#2a2a2a",
+                    border: "1px solid #444",
+                    borderRadius: "12px",
+                    padding: "2rem",
+                    maxWidth: "600px",
+                    width: "90%",
+                    boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
+                }}
+            >
+                <h3 style={{ marginBottom: "0.5rem" }}>Frage</h3>
+                <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{currentCard.question}</p>
 
                 {showAnswer && (
                     <>
                         <h4>Antwort</h4>
-                        <p>{currentCard.answer}</p>
+                        <p style={{ background: "#3a3a3a", padding: "1rem", borderRadius: "8px" }}>
+                            {currentCard.answer}
+                        </p>
                     </>
                 )}
 
-                <div className="button-row">
+                <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "space-between" }}>
                     <button onClick={handlePrevious}>◀ Vorherige</button>
                     <button onClick={() => setShowAnswer(!showAnswer)}>
                         {showAnswer ? "Antwort ausblenden" : "Antwort anzeigen"}
@@ -71,11 +99,11 @@ function LearnView() {
                     <button onClick={handleNext}>Nächste ▶</button>
                 </div>
 
-                <button className="learned-button" onClick={handleMarkAsLearned}>
-                    ✅ Als gelernt markieren
-                </button>
+                <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                    <button onClick={handleMarkAsLearned}>✅ Als gelernt markieren</button>
+                </div>
 
-                <p className="progress-indicator">
+                <p style={{ marginTop: "1rem", textAlign: "center", fontSize: "0.9rem" }}>
                     Karte {currentIndex + 1} / {cards.length}
                 </p>
             </div>

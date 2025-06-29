@@ -10,12 +10,22 @@ const RoomView = () => {
     const [hasFlashcards, setHasFlashcards] = useState(false);
     const navigate = useNavigate();
 
+    // useEffect(() => {
+    //     fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
+    //         .then((res) => res.json())
+    //         .then((data) => setHasFlashcards(data.length > 0))
+    //         .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
+    // }, [roomId]);
+
     useEffect(() => {
-        fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
+        console.log("2")
+
+        fetch(`http://localhost:8000/flashcards/by-room-and-user/${roomId}/${userId}`)
             .then((res) => res.json())
             .then((data) => setHasFlashcards(data.length > 0))
             .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
-    }, [roomId]);
+    }, [roomId, userId]);
+
 
     const handleStartLearning = () => {
         navigate(`/learn/${roomId}`);

@@ -5,13 +5,22 @@ function RoomDetail() {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [flashcards, setFlashcards] = useState([]);
+  const userId = localStorage.getItem("userId");
+
+  // useEffect(() => {
+  //   fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
+  //       .then((res) => res.json())
+  //       .then((data) => setFlashcards(data))
+  //       .catch((error) => console.error("Fehler beim Laden der Flashcards:", error));
+  // }, [roomId]);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
+  console.log("1")
+    fetch(`http://localhost:8000/flashcards/by-room-and-user/${roomId}/${userId}`)
         .then((res) => res.json())
         .then((data) => setFlashcards(data))
-        .catch((error) => console.error("Fehler beim Laden der Flashcards:", error));
-  }, [roomId]);
+        .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
+  }, [roomId, userId]);
 
   const handleStartLearning = () => {
     navigate(`/learn/${roomId}`);
