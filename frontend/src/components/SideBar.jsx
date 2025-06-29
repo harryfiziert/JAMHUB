@@ -48,7 +48,7 @@ const Sidebar = () => {
               <Link to="/flashcards">Flashcards</Link>
               <Link to="/upload">Upload</Link>
               <Link to="/rooms">Räume</Link>
-              <Link to="/progress">Fortschritt</Link>
+              <Link to="/badges">Badges</Link>
               <Link to="/exam">Exam Simulation</Link>
             </div>
 

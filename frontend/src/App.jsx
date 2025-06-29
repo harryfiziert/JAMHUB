@@ -16,7 +16,7 @@ import { auth } from "./Firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import RoomView from "./components/RoomView"; // ✅ neue Komponente importieren
 import LearnView from "./components/LearnView";
-
+import Badges from "./components/Badges";
 
 function App() {
     const [user, setUser] = useState(undefined); // undefined = loading
@@ -47,8 +47,8 @@ function App() {
                         display: "flex",
                         flexDirection: "column",
                         overflowX: "hidden",
-                        backgroundColor: "var(--bg-color)", // ✅ Wichtig für Mode
-                        color: "var(--text-color)",           // ✅ Optional, konsistent
+                        backgroundColor: "var(--bg-color)",
+                        color: "var(--text-color)",
                     }}
                 >
                     <Routes>
@@ -90,10 +90,10 @@ function App() {
                             }
                         />
                         <Route
-                            path="/progress"
+                            path="/Badges"
                             element={
                                 <ProtectedRoute>
-                                    <div>Progress Page</div>
+                                    <Badges />
                                 </ProtectedRoute>
                             }
                         />
