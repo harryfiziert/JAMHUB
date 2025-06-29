@@ -4,6 +4,9 @@ from typing import List
 from db.dbConnection import db
 import random
 import string
+from bson import ObjectId
+from routes.flashcards import collection as flashcard_collection
+import copy
 
 router = APIRouter()
 collection = db["rooms"]
@@ -41,6 +44,19 @@ async def create_room(room: Room):
     return room_data
 
 # User zu Raum hinzufügen
+# @router.post("/room/{code}/add-user/{uid}")
+# async def add_user_to_room(code: str, uid: str):
+#     room = collection.find_one({"id": code})
+#     if not room:
+#         raise HTTPException(status_code=404, detail="Room not found")
+#
+#     if uid in room["user"]:
+#         return {"message": "User already in room"}
+#
+#     collection.update_one({"id": code}, {"$push": {"user": uid}})
+#     return {"message": f"User {uid} added to room {code}"}
+
+
 @router.post("/room/{code}/add-user/{uid}")
 async def add_user_to_room(code: str, uid: str):
     room = collection.find_one({"id": code})
@@ -50,8 +66,20 @@ async def add_user_to_room(code: str, uid: str):
     if uid in room["user"]:
         return {"message": "User already in room"}
 
+    # User hinzufügen
     collection.update_one({"id": code}, {"$push": {"user": uid}})
-    return {"message": f"User {uid} added to room {code}"}
+
+    # Flashcards für den User duplizieren
+    original_flashcards = flashcard_collection.find({"room_id": code})
+
+    for card in original_flashcards:
+        new_card = copy.deepcopy(card)
+        new_card["_id"] = ObjectId()  # neue ID
+        new_card["user_id"] = uid  # User zuweisen
+        new_card["original_id"] = str(card["_id"])  # Original-Referenz
+        flashcard_collection.insert_one(new_card)
+
+    return {"message": f"User {uid} added to room {code} and flashcards copied."}
 
 # User aus Raum entfernen
 @router.delete("/room/{code}/remove-user/{uid}")
