@@ -41,7 +41,7 @@ async def create_room(room: Room):
     return room_data
 
 # User zu Raum hinzufügen
-@router.patch("/room/{code}/add-user/{uid}")
+@router.post("/room/{code}/add-user/{uid}")
 async def add_user_to_room(code: str, uid: str):
     room = collection.find_one({"id": code})
     if not room:

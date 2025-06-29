@@ -85,7 +85,8 @@ room_id: str = Form(...)):
         except Exception as e:
             created.append({"error": f"Fehler bei Chunk: {chunk[:50]}...", "detail": str(e)})
 
-    return created
+    return {"message": f"{len(cards)} Karten erfolgreich erstellt", "cards": cards}
+
 
 @router.get("/flashcards")
 def get_all_flashcards():
