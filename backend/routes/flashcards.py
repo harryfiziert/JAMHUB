@@ -16,9 +16,7 @@ from fastapi import Form
 from bson.json_util import dumps
 from pydantic import BaseModel, Extra
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+
 
 router = APIRouter()
 load_dotenv()
