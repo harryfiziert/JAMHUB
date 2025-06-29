@@ -14,7 +14,9 @@ import ExamSimulation from "./components/ExamSimulation";
 import Upload from "./components/Upload";
 import { auth } from "./Firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import RoomView from "./components/RoomView"; // ✅ Neue Komponente
+import RoomView from "./components/RoomView"; // ✅ neue Komponente importieren
+import LearnView from "./components/LearnView";
+
 
 function App() {
     const [user, setUser] = useState(undefined); // undefined = loading
@@ -141,6 +143,12 @@ function App() {
                                 <ProtectedRoute>
                                     <RoomView />
                                 </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/learn/:roomId"
+                            element={
+                            <LearnView />
                             }
                         />
 

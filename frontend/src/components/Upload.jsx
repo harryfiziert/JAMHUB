@@ -25,10 +25,15 @@ const Upload = ({ roomId }) => {
         formData.append("room_id", roomId);
 
         try {
-            const res = await fetch(`http://localhost:8000/upload-pdf/${roomId}`, {
+            // const res = await fetch(`http://localhost:8000/upload-pdf/${roomId}`, {
+            //     method: "POST",
+            //     body: formData,
+            // });
+            const res = await fetch("http://localhost:8000/flashcards/from-pdf", {
                 method: "POST",
                 body: formData,
             });
+
 
             if (!res.ok) throw new Error("Upload fehlgeschlagen");
 
