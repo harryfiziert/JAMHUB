@@ -14,6 +14,11 @@ from datetime import datetime
 import random
 from fastapi import Form
 from bson.json_util import dumps
+from pydantic import BaseModel, Extra
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 load_dotenv()
@@ -35,6 +40,8 @@ class FlashcardUpdate(BaseModel):
     question: Optional[str]
     answer: Optional[str]
     learned: Optional[bool]
+    class Config:
+        extra = Extra.allow
 
 
 class CommentInput(BaseModel):
@@ -115,12 +122,12 @@ def get_flashcard(id: str):
 
 
 @router.put("/flashcard/{id}")
-def update_flashcard(id: str, update: FlashcardUpdate):
-    update_data = {k: v for k, v in update.dict().items() if v is not None}
-    result = collection.update_one({"_id": ObjectId(id)}, {"$set": update_data})
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Flashcard nicht gefunden")
-    return {"message": "Flashcard aktualisiert"}
+def update_flashcard(id: str, data: dict):
+    result = collection.update_one({"_id": ObjectId(id)}, {"$set": data})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Flashcard not found or unchanged")
+    return {"message": "Flashcard updated"}
+
 
 
 @router.delete("/flashcard/{id}")
