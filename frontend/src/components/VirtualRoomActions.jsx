@@ -29,15 +29,15 @@ const VirtualRoomActions = () => {
 
             const data = await res.json();
             if (res.ok) {
-                setStatus(`✅ Raum '${roomName}' erfolgreich erstellt (ID: ${data.id})`);
+                setStatus(` Raum '${roomName}' erfolgreich erstellt (ID: ${data.id})`);
                 setRoomName("");
                 setPassword("");
             } else {
-                setStatus("❌ Fehler beim Erstellen: " + data.detail);
+                setStatus("Fehler beim Erstellen: " + data.detail);
             }
         } catch (error) {
             console.error("Fehler beim Erstellen des Raums:", error);
-            setStatus("❌ Netzwerkfehler beim Erstellen");
+            setStatus("Netzwerkfehler beim Erstellen");
         }
     };
 
@@ -55,19 +55,19 @@ const VirtualRoomActions = () => {
                     const addUserData = await addUserRes.json();
 
                     if (addUserRes.ok) {
-                        setStatus("✅ Beitritt erfolgreich!");
+                        setStatus("Beitritt erfolgreich!");
                     } else {
-                        setStatus("⚠️ Beigetreten, aber User nicht hinzugefügt: " + addUserData.message);
+                        setStatus("Beigetreten, aber User nicht hinzugefügt: " + addUserData.message);
                     }
                 } else {
-                    setStatus("❌ Falsches Passwort");
+                    setStatus("Falsches Passwort");
                 }
             } else {
-                setStatus("❌ Raum nicht gefunden");
+                setStatus("Raum nicht gefunden");
             }
         } catch (error) {
             console.error("Fehler beim Beitritt:", error);
-            setStatus("❌ Netzwerkfehler beim Beitritt");
+            setStatus("Netzwerkfehler beim Beitritt");
         }
     };
 
