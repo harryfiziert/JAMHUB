@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import Optional, List
 from dotenv import load_dotenv
 from bson import ObjectId
+from starlette.responses import JSONResponse
+
 from db.dbConnection import db
 import os
 from openai import OpenAI
@@ -11,6 +13,7 @@ import json
 from datetime import datetime
 import random
 from fastapi import Form
+from bson.json_util import dumps
 
 router = APIRouter()
 load_dotenv()
@@ -20,28 +23,34 @@ client = OpenAI(api_key=api_key)
 collection = db["flashcards"]
 comments = db["comments"]
 
+
 # ─────────────── MODELS ───────────────
 
 class FlashcardInput(BaseModel):
     text: str
-    user_id: Optional[str] = None
     room_id: Optional[str] = None
+
 
 class FlashcardUpdate(BaseModel):
     question: Optional[str]
     answer: Optional[str]
     learned: Optional[bool]
 
+
 class CommentInput(BaseModel):
     flashcard_id: str
     user_id: str
     content: str
 
+
 # ─────────────── FLASHCARDS ───────────────
+def serialize_flashcard(card):
+    card["_id"] = str(card["_id"])  # aus ObjectId → String
+    return card
 
 @router.post("/flashcards/from-pdf")
 async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: str = Form(...),
-room_id: str = Form(...)):
+                                       room_id: str = Form(...)):
     try:
         pdf_bytes = await file.read()
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -95,6 +104,7 @@ def get_all_flashcards():
         card["_id"] = str(card["_id"])
     return cards
 
+
 @router.get("/flashcard/{id}")
 def get_flashcard(id: str):
     card = collection.find_one({"_id": ObjectId(id)})
@@ -102,6 +112,7 @@ def get_flashcard(id: str):
         raise HTTPException(status_code=404, detail="Flashcard nicht gefunden")
     card["_id"] = str(card["_id"])
     return card
+
 
 @router.put("/flashcard/{id}")
 def update_flashcard(id: str, update: FlashcardUpdate):
@@ -111,12 +122,14 @@ def update_flashcard(id: str, update: FlashcardUpdate):
         raise HTTPException(status_code=404, detail="Flashcard nicht gefunden")
     return {"message": "Flashcard aktualisiert"}
 
+
 @router.delete("/flashcard/{id}")
 def delete_flashcard(id: str):
     result = collection.delete_one({"_id": ObjectId(id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Flashcard nicht gefunden")
     return {"message": "Flashcard gelöscht"}
+
 
 @router.get("/flashcards/by-user/{user_id}")
 def get_flashcards_by_user(user_id: str):
@@ -125,12 +138,24 @@ def get_flashcards_by_user(user_id: str):
         card["_id"] = str(card["_id"])
     return cards
 
+
 @router.get("/flashcards/by-room/{room_id}")
 def get_flashcards_by_room(room_id: str):
     cards = list(collection.find({"room_id": room_id}))
     for card in cards:
         card["_id"] = str(card["_id"])
     return cards
+
+
+# @router.get("/flashcards/by-room-and-user/{room_id}/{user_id}")
+# async def get_flashcards_by_room_and_user(room_id: str, user_id: str):
+#     flashcards = list(collection.find({"room_id": room_id, "user_id": user_id}))
+#     return json.loads(dumps(flashcards))
+@router.get("/flashcards/by-room-and-user/{room_id}/{user_id}")
+def get_flashcards_by_room_and_user(room_id: str, user_id: str):
+    flashcards = collection.find({"room_id": room_id, "user_id": user_id})
+    return [serialize_flashcard(card) for card in flashcards]
+
 
 @router.get("/flashcards/progress/{user_id}")
 def get_progress_by_user(user_id: str):
@@ -164,6 +189,28 @@ def get_progress_by_user(user_id: str):
     ]
     return list(collection.aggregate(pipeline))
 
+
+@router.patch("/flashcards/{flashcard_id}/mark-learned")
+async def mark_card_as_learned(flashcard_id: str):
+    result = collection.update_one(
+        {"_id": ObjectId(flashcard_id)},
+        {"$set": {"learned": True}}
+    )
+    if result.modified_count == 1:
+        return {"message": "Marked as learned"}
+    raise HTTPException(status_code=404, detail="Card not found")
+
+
+@router.get("/flashcards/to-learn/{user_id}/{room_id}")
+def get_flashcards_to_learn(user_id: str, room_id: str):
+    cards = list(collection.find({
+        "user_id": user_id,
+        "room_id": room_id,
+        "learned": False
+    }))
+    return JSONResponse(content=json.loads(dumps(cards)))
+
+
 # ─────────────── 🆕 Exam Simulation Endpoint ───────────────
 
 @router.get("/exam-simulation/{user_id}")
@@ -183,6 +230,7 @@ def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
 
     return exam_cards
 
+
 # ─────────────── COMMENTS ───────────────
 
 @router.post("/comments")
@@ -198,12 +246,14 @@ def add_comment(comment: CommentInput):
     })
     return {"message": "Comment added", "id": str(result.inserted_id)}
 
+
 @router.get("/comments/{flashcard_id}")
 def get_comments(flashcard_id: str):
     result = list(comments.find({"flashcard_id": flashcard_id}).sort("created_at", -1))
     for r in result:
         r["_id"] = str(r["_id"])
     return result
+
 
 @router.delete("/comments/{comment_id}")
 def delete_comment(comment_id: str):
