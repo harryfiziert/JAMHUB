@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // useNavigate ist bereits importiert
 import { signOut } from "firebase/auth";
 import { auth } from "../Firebase";
 
@@ -29,6 +29,11 @@ const Sidebar = () => {
     }
   };
 
+  // NEU: Handler für den Tutorial-Button
+  const handleTutorialClick = () => {
+    navigate('/tutorial');
+  };
+
   return (
       <div className="sidebar">
         {/* Top Section */}
@@ -36,10 +41,11 @@ const Sidebar = () => {
           <h2 className="sidebar-title">LernApp</h2>
 
           <nav className="sidebar-nav">
+            {/* NavLink ist hier besser geeignet für aktive Stile, aber Link funktioniert auch */}
             <div className="sidebar-section">
               <div className="sidebar-section-title">Overview</div>
               <div className="sidebar-sublinks">
-                <Link to="/dashboard">Summary</Link>
+                <Link to="/dashboard">Summary</Link> {/* Angenommen, Dashboard ist die Summary-Seite */}
                 <Link to="/custom">Custom view</Link>
               </div>
             </div>
@@ -70,7 +76,10 @@ const Sidebar = () => {
 
         {/* Bottom Section */}
         <div className="sidebar-bottom">
-          <div className="sidebar-tutorial">Webapp – Tutorial</div>
+          {/* Geändert: Von div zu button mit onClick Handler */}
+          <button onClick={handleTutorialClick} className="sidebar-tutorial-button">
+            Webapp – Tutorial
+          </button>
           <button onClick={handleLogout} className="sidebar-logout">
             Log out
           </button>

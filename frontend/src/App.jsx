@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Sidebar from "./components/SideBar";
+import Sidebar from "./components/SideBar"; // ANPASSUNG: 'SideBar' mit großem 'B'
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
@@ -9,14 +9,15 @@ import Settings from "./components/Settings";
 import VirtualRoomActions from "./components/VirtualRoomActions";
 import VirtualRoomPage from "./components/VirtualRoomPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Flashcards from "./components/Flashcard";
+import Flashcards from "./components/Flashcard"; // ANPASSUNG: 'Flashcard' (Singular)
 import ExamSimulation from "./components/ExamSimulation";
 import Upload from "./components/Upload";
 import { auth } from "./Firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import RoomView from "./components/RoomView"; // ✅ neue Komponente importieren
+import RoomView from "./components/RoomView";
 import LearnView from "./components/LearnView";
 import Badges from "./components/Badges";
+import TutorialPage from "./components/TutorialPage";
 
 function App() {
     const [user, setUser] = useState(undefined); // undefined = loading
@@ -148,7 +149,16 @@ function App() {
                         <Route
                             path="/learn/:roomId"
                             element={
-                            <LearnView />
+                                <LearnView />
+                            }
+                        />
+                        {/* NEU: Tutorial-Seite */}
+                        <Route
+                            path="/tutorial"
+                            element={
+                                <ProtectedRoute>
+                                    <TutorialPage />
+                                </ProtectedRoute>
                             }
                         />
 
