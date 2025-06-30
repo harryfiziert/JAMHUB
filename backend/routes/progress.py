@@ -28,3 +28,22 @@ def get_badges_for_user(user_id: str):
     return {"total_learned": learned_count, "badges": earned_badges}
 
 
+@router.get("/progress/{user_id}/{room_id}")
+def get_progress(user_id: str, room_id: str):
+    total_cards = flashcards_collection.count_documents({"user_id": user_id, "room_id": room_id})
+    learned_cards = flashcards_collection.count_documents({
+        "user_id": user_id,
+        "room_id": room_id,
+        "learned": True
+    })
+
+    if total_cards == 0:
+        return {"progress": 0, "learned": 0, "total": 0}
+
+    progress = (learned_cards / total_cards) * 100
+    return {
+        "percent": round(progress, 2),
+        "learned_cards": learned_cards,
+        "total_cards": total_cards
+    }
+
