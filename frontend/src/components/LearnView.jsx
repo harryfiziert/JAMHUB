@@ -33,9 +33,8 @@ function LearnView() {
 
     const handleMarkAsLearned = async () => {
         const currentCard = cards[currentIndex];
-        console.log("currentCard", currentCard);
-        console.log("currentCard._id:", currentCard._id);
-
+        // console.log("currentCard", currentCard);
+        // console.log("currentCard._id:", currentCard._id);
         await fetch(`/flashcards/${currentCard._id.$oid}/mark-learned`, {
             method: "PATCH",
         });
