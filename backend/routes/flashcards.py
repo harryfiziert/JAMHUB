@@ -293,6 +293,7 @@ def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
     random.shuffle(cards)
     exam_cards = cards[:limit]
 
+
     for card in exam_cards:
         card["_id"] = str(card["_id"])
         card.pop("learned", None)
