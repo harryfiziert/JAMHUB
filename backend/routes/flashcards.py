@@ -131,7 +131,6 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                 card["_id"] = str(result.inserted_id)
             break
 
-    # return {"message": f"{len(cards)} Karten erfolgreich erstellt", "cards": cards}
     return {"message": "PDF verarbeitet", "cards": created, "errors": [c for c in created if "error" in c]}
 
 
@@ -282,9 +281,13 @@ def rate_flashcard_difficulty(flashcard_id: str, payload: dict):
 
 @router.get("/exam-simulation/{user_id}")
 def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
+    print("📥 Exam-Simulation: user_id =", user_id)
+    print("📥 room_id =", room_id)
     query = {"user_id": user_id}
     if room_id:
         query["room_id"] = room_id
+
+    print("📤 MongoDB Query:", query)
 
     cards = list(collection.find(query))
     random.shuffle(cards)
@@ -292,7 +295,6 @@ def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
 
     for card in exam_cards:
         card["_id"] = str(card["_id"])
-        card.pop("answer", None)  # hide answers
         card.pop("learned", None)
 
     return exam_cards
