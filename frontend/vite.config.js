@@ -15,6 +15,7 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       },
+      '/exam-simulation': 'http://localhost:8000',
     }
   }
 });

@@ -7,13 +7,6 @@ function RoomDetail() {
   const [flashcards, setFlashcards] = useState([]);
   const userId = localStorage.getItem("userId");
 
-  // useEffect(() => {
-  //   fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
-  //       .then((res) => res.json())
-  //       .then((data) => setFlashcards(data))
-  //       .catch((error) => console.error("Fehler beim Laden der Flashcards:", error));
-  // }, [roomId]);
-
   useEffect(() => {
   console.log("1")
     fetch(`http://localhost:8000/flashcards/by-room-and-user/${roomId}/${userId}`)
@@ -26,31 +19,50 @@ function RoomDetail() {
     navigate(`/learn/${roomId}`);
   };
 
-  return (
-      <div className="p-4 text-white">
-        <h2 className="text-xl font-bold mb-4">🧠 Raum: {roomId}</h2>
+    const handleStartExam = () => {
+        navigate(`/exam/${roomId}`);
+    };
 
-        {/* Lernen starten Button */}
-        {flashcards.length > 0 && (
-            <button
-                onClick={handleStartLearning}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-6"
-            >
-              Lernen starten
-            </button>
-        )}
 
-        {/* Flashcards anzeigen */}
-        <div className="space-y-4">
-          {flashcards.map((card) => (
-              <div key={card._id} className="bg-gray-800 p-4 rounded shadow">
-                <p className="font-semibold">Q: {card.question}</p>
-                <p className="mb-2">A: {card.answer}</p>
-              </div>
-          ))}
+    return (
+        <div className="p-4 text-white">
+            <h2 className="text-xl font-bold mb-4">Raum: {roomId}</h2>
+
+            {flashcards.length > 0 && (
+                <div className="mb-6 flex flex-wrap gap-4">
+                    <button
+                        onClick={handleStartLearning}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                    >
+                        Lernen starten
+                    </button>
+
+                    <button
+                        onClick={handleStartExam}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    >
+                        Prüfung starten
+                    </button>
+                </div>
+            )}
+
+
+
+
+
+
+            {/* Flashcards anzeigen */
+}
+    <div className="space-y-4">
+        {flashcards.map((card) => (
+            <div key={card._id} className="bg-gray-800 p-4 rounded shadow">
+                        <p className="font-semibold">Q: {card.question}</p>
+                        <p className="mb-2">A: {card.answer}</p>
+                    </div>
+                ))}
+            </div>
         </div>
-      </div>
-  );
+    );
 }
 
 export default RoomDetail;

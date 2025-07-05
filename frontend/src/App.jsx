@@ -99,7 +99,7 @@ function App() {
                             }
                         />
                         <Route
-                            path="/exam"
+                            path="/exam/:roomId"
                             element={
                                 <ProtectedRoute>
                                     <ExamSimulation />

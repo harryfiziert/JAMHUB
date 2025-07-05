@@ -31,6 +31,11 @@ const RoomView = () => {
         navigate(`/learn/${roomId}`);
     };
 
+    const handleStartExam = () => {
+        navigate(`/exam/${roomId}`);
+    };
+
+
     return (
         <div style={styles.wrapper}>
             <h2 style={styles.heading}>📚 Raum: {roomId}</h2>
@@ -40,14 +45,17 @@ const RoomView = () => {
 
             <hr style={styles.hr} />
 
-            <div style={styles.flashcardHeader}>
-                <h3>Flashcards</h3>
-                {hasFlashcards && (
+            {hasFlashcards && (
+                <div style={{ display: "flex", gap: "10px" }}>
                     <button onClick={handleStartLearning} style={styles.learnButton}>
                         Lernen starten
                     </button>
-                )}
-            </div>
+                    <button onClick={handleStartExam} style={styles.examButton}>
+                        Prüfung starten
+                    </button>
+                </div>
+            )}
+
 
             <Flashcards roomId={roomId} />
         </div>
@@ -88,6 +96,16 @@ const styles = {
         margin: "40px 0",
         borderColor: "var(--border-color)",
     },
+    examButton: {
+        padding: "10px 20px",
+        backgroundColor: "#007bff",
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontSize: "16px",
+    },
+
 };
 
 export default RoomView;
