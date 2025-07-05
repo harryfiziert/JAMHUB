@@ -43,19 +43,6 @@ async def create_room(room: Room):
 
     return room_data
 
-# User zu Raum hinzufügen
-# @router.post("/room/{code}/add-user/{uid}")
-# async def add_user_to_room(code: str, uid: str):
-#     room = collection.find_one({"id": code})
-#     if not room:
-#         raise HTTPException(status_code=404, detail="Room not found")
-#
-#     if uid in room["user"]:
-#         return {"message": "User already in room"}
-#
-#     collection.update_one({"id": code}, {"$push": {"user": uid}})
-#     return {"message": f"User {uid} added to room {code}"}
-
 
 @router.post("/room/{code}/add-user/{uid}")
 async def add_user_to_room(code: str, uid: str):
@@ -74,9 +61,10 @@ async def add_user_to_room(code: str, uid: str):
 
     for card in original_flashcards:
         new_card = copy.deepcopy(card)
-        new_card["_id"] = ObjectId()  # neue ID
-        new_card["user_id"] = uid  # User zuweisen
-        new_card["original_id"] = str(card["_id"])  # Original-Referenz
+        new_card["_id"] = ObjectId()
+        new_card["user_id"] = uid
+        new_card["original_id"] = str(card["_id"])
+        new_card["difficulty"] = {}
         flashcard_collection.insert_one(new_card)
 
     return {"message": f"User {uid} added to room {code} and flashcards copied."}
