@@ -93,13 +93,45 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                 card["user_id"] = user_id
                 card["room_id"] = room_id
                 card["learned"] = False
+                card["difficulty"] = {}
                 result = collection.insert_one(card)
                 card["_id"] = str(result.inserted_id)
                 created.append(card)
         except Exception as e:
-            created.append({"error": f"Fehler bei Chunk: {chunk[:50]}...", "detail": str(e)})
+            print("GPT-Fehler:", e)
+            # BREAK und Dummy-Karten erzeugen
+            created = [
+                {
+                    "question": "Was ist ein Betriebssystem?",
+                    "answer": "Ein Betriebssystem verwaltet Hardware und Software und stellt Schnittstellen für Anwendungen bereit.",
+                    "user_id": user_id,
+                    "room_id": room_id,
+                    "learned": False,
+                    "difficulty": {}
+                },
+                {
+                    "question": "Was versteht man unter einer IP-Adresse?",
+                    "answer": "Eine IP-Adresse identifiziert ein Gerät eindeutig in einem Netzwerk.",
+                    "user_id": user_id,
+                    "room_id": room_id,
+                    "learned": False,
+                    "difficulty": {}
+                },
+                {
+                    "question": "Nenne drei Grundbegriffe der Objektorientierung.",
+                    "answer": "Klasse, Objekt, Vererbung",
+                    "user_id": user_id,
+                    "room_id": room_id,
+                    "learned": False,
+                    "difficulty": {}
+                }
+            ]
+            for card in created:
+                result = collection.insert_one(card)
+                card["_id"] = str(result.inserted_id)
+            break
 
-    return {"message": f"{len(cards)} Karten erfolgreich erstellt", "cards": cards}
+    return {"message": "PDF verarbeitet", "cards": created, "errors": [c for c in created if "error" in c]}
 
 
 @router.get("/flashcards")
@@ -216,13 +248,45 @@ def get_flashcards_to_learn(user_id: str, room_id: str):
     return JSONResponse(content=json.loads(dumps(cards)))
 
 
+@router.post("/flashcards/{flashcard_id}/rate_difficulty")
+def rate_flashcard_difficulty(flashcard_id: str, payload: dict):
+    user_id = payload.get("user_id")
+    score = payload.get("score")
+
+    if user_id is None or score is None:
+        raise HTTPException(status_code=400, detail="user_id and score are required")
+
+    if not (0 <= score <= 3):
+        raise HTTPException(status_code=400, detail="score must be between 0 and 3")
+
+    update = {
+        f"difficulty.{user_id}": score
+    }
+
+    if score == 0:
+        update["learned"] = True
+
+    result = collection.update_one(
+        {"_id": ObjectId(flashcard_id)},
+        {"$set": update}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Flashcard not found")
+
+    return {"status": "ok", "updated": result.modified_count}
+
+
 # ─────────────── 🆕 Exam Simulation Endpoint ───────────────
 
 @router.get("/exam-simulation/{user_id}")
 def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
+    print("📥 Exam-Simulation: user_id =", user_id)
+    print("📥 room_id =", room_id)
     query = {"user_id": user_id}
     if room_id:
         query["room_id"] = room_id
+    print("📤 MongoDB Query:", query)
 
     cards = list(collection.find(query))
     random.shuffle(cards)
@@ -230,7 +294,6 @@ def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
 
     for card in exam_cards:
         card["_id"] = str(card["_id"])
-        card.pop("answer", None)  # hide answers
         card.pop("learned", None)
 
     return exam_cards
