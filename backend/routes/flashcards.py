@@ -286,13 +286,11 @@ def simulate_exam(user_id: str, limit: int = 5, room_id: Optional[str] = None):
     query = {"user_id": user_id}
     if room_id:
         query["room_id"] = room_id
-
     print("📤 MongoDB Query:", query)
 
     cards = list(collection.find(query))
     random.shuffle(cards)
     exam_cards = cards[:limit]
-
 
     for card in exam_cards:
         card["_id"] = str(card["_id"])
