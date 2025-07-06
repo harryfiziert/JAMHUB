@@ -3,19 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import Upload from "./Upload";
 import Flashcards from "./Flashcard";
 import ProgressTracker from "./ProgressTracker";
+import Leaderboard from "./Leaderboard";
 
 const RoomView = () => {
     const { roomId } = useParams();
     const userId = localStorage.getItem("userId");
     const [hasFlashcards, setHasFlashcards] = useState(false);
     const navigate = useNavigate();
-
-    // useEffect(() => {
-    //     fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
-    //         .then((res) => res.json())
-    //         .then((data) => setHasFlashcards(data.length > 0))
-    //         .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
-    // }, [roomId]);
 
     useEffect(() => {
         console.log("2")
@@ -31,25 +25,36 @@ const RoomView = () => {
         navigate(`/learn/${roomId}`);
     };
 
+    const handleStartExam = () => {
+        navigate(`/exam/${roomId}`);
+    };
+
+
     return (
         <div style={styles.wrapper}>
-            <h2 style={styles.heading}>📚 Raum: {roomId}</h2>
+            <h2 style={styles.heading}>Raum: {roomId}</h2>
 
             <ProgressTracker userId={userId} roomId={roomId} />
             <Upload roomId={roomId} />
 
             <hr style={styles.hr} />
 
-            <div style={styles.flashcardHeader}>
-                <h3>Flashcards</h3>
-                {hasFlashcards && (
+            {hasFlashcards && (
+                <div style={{ display: "flex", gap: "10px" }}>
                     <button onClick={handleStartLearning} style={styles.learnButton}>
                         Lernen starten
                     </button>
-                )}
-            </div>
+                    <button onClick={handleStartExam} style={styles.examButton}>
+                        Prüfung starten
+                    </button>
+                </div>
+            )}
+
 
             <Flashcards roomId={roomId} />
+
+            <Leaderboard roomId={roomId} />
+
         </div>
     );
 };
@@ -88,6 +93,16 @@ const styles = {
         margin: "40px 0",
         borderColor: "var(--border-color)",
     },
+    examButton: {
+        padding: "10px 20px",
+        backgroundColor: "#007bff",
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontSize: "16px",
+    },
+
 };
 
 export default RoomView;

@@ -47,7 +47,6 @@ const Sidebar = () => {
 
               <Link to="/rooms">Räume</Link>
               <Link to="/badges">Badges</Link>
-              <Link to="/exam">Exam Simulation</Link>
             </div>
 
             <hr className="sidebar-divider"/>

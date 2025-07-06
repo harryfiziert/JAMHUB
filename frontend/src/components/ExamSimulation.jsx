@@ -1,83 +1,117 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
-const ExamSimulation = () => {
+function ExamSimulation() {
+    const { roomId } = useParams();
+    const userId = localStorage.getItem("userId");
     const [cards, setCards] = useState([]);
-    const [userAnswers, setUserAnswers] = useState({});
-    const [results, setResults] = useState({});
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [showAnswer, setShowAnswer] = useState(false);
+    const [evaluations, setEvaluations] = useState([]); // [{cardId, result}]
+    const [done, setDone] = useState(false);
 
     useEffect(() => {
-        fetch("http://127.0.0.1:8000/flashcards/by-user/test-user")
-            .then((res) => res.json())
-            .then((data) => {
-                const shuffled = data.sort(() => 0.5 - Math.random()).slice(0, 5);
-                setCards(shuffled);
-            })
-            .catch((err) => console.error("Fehler beim Laden der Karten:", err));
-    }, []);
+        if (!userId || !roomId) return;
 
-    const handleChange = (cardId, value) => {
-        setUserAnswers((prev) => ({ ...prev, [cardId]: value }));
+        fetch(`http://localhost:8000/exam-simulation/${userId}?room_id=${roomId}&limit=5`)
+            .then(res => res.json())
+            .then(data => setCards(data))
+            .catch(err => console.error("Fehler beim Laden der Prüfungskarten:", err));
+    }, [roomId]);
+
+    const handleEvaluation = (value) => {
+        const card = cards[currentIndex];
+        setEvaluations((prev) => [...prev, { cardId: card._id, result: value }]);
+        setShowAnswer(false);
+
+        if (currentIndex + 1 < cards.length) {
+            setCurrentIndex((prev) => prev + 1);
+        } else {
+            setDone(true);
+        }
     };
 
-    const handleSubmit = () => {
-        const feedback = {};
-        cards.forEach((card) => {
-            const correct = card.answer?.trim().toLowerCase();
-            const given = userAnswers[card._id]?.trim().toLowerCase();
-            feedback[card._id] = correct === given;
+    const getSummary = () => {
+        const total = evaluations.length;
+        let points = 0;
+
+        evaluations.forEach((e) => {
+            if (e.result === "correct") points += 1;
+            else if (e.result === "partial") points += 0.5;
         });
-        setResults(feedback);
+
+        const percent = Math.round((points / total) * 100);
+        return {
+            total,
+            correct: points,
+            percent
+        };
     };
+
+    if (cards.length === 0) {
+        return <div style={{ padding: "2rem" }}>Keine Karten gefunden.</div>;
+    }
+
+    if (done) {
+        const summary = getSummary();
+        return (
+            <div style={{ padding: "2rem", textAlign: "center" }}>
+                <h2>Prüfung abgeschlossen</h2>
+                <p>{summary.correct} von {summary.total} richtig</p>
+                <p>Ergebnis: {summary.percent}%</p>
+                <p>Note: {
+                    summary.percent >= 90 ? "Sehr gut" :
+                        summary.percent >= 75 ? "Gut" :
+                            summary.percent >= 60 ? "Befriedigend" :
+                                summary.percent >= 50 ? "Genügend" : "Nicht genügend"
+                }</p>
+            </div>
+        );
+    }
+
+    const card = cards[currentIndex];
 
     return (
-        <div className="exam-container" style={{ padding: "32px" }}>
-            <h2 style={{ marginBottom: "24px" }}>📘 Exam Simulation</h2>
+        <div style={{ padding: "2rem" }}>
+            <h2>📘 Prüfung im Raum: {roomId}</h2>
+            <p><strong>Frage {currentIndex + 1} von {cards.length}:</strong></p>
+            <p style={{ fontSize: "1.2rem" }}>{card.question}</p>
 
-            {cards.length === 0 && (
-                <p style={{ color: "var(--text-color)" }}>Keine Karten gefunden.</p>
+            {!showAnswer && (
+                <button onClick={() => setShowAnswer(true)} style={btnStyle}>
+                    Antwort anzeigen
+                </button>
             )}
 
-            {cards.map((card, index) => (
-                <div key={card._id} className="exam-question">
-                    <strong style={{ display: "block", marginBottom: "8px" }}>
-                        Q{index + 1}: {card.question}
-                    </strong>
-                    <input
-                        type="text"
-                        value={userAnswers[card._id] || ""}
-                        onChange={(e) => handleChange(card._id, e.target.value)}
-                        style={{
-                            width: "100%",
-                            padding: "10px",
-                            borderRadius: "4px",
-                            border: "1px solid var(--border-color)",
-                            color: "var(--text-color)",
-                            backgroundColor: "var(--bg-color)"
-                        }}
-                    />
-                    {results[card._id] !== undefined && (
-                        <p
-                            style={{
-                                marginTop: "8px",
-                                color: results[card._id] ? "limegreen" : "tomato",
-                                fontWeight: "bold"
-                            }}
-                        >
-                            {results[card._id]
-                                ? "✅ Richtig"
-                                : `❌ Falsch – korrekt: ${card.answer}`}
-                        </p>
-                    )}
-                </div>
-            ))}
-
-            {cards.length > 0 && (
-                <div style={{ textAlign: "center", marginTop: "32px" }}>
-                    <button onClick={handleSubmit}>Submit</button>
-                </div>
+            {showAnswer && (
+                <>
+                    <div style={{ margin: "1rem 0", padding: "1rem", background: "#2a2a2a", borderRadius: "6px" }}>
+                        <strong>Antwort:</strong>
+                        <p>{card.answer}</p>
+                    </div>
+                    <p>Wie gut konntest du sie beantworten?</p>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <button onClick={() => handleEvaluation("correct")} style={btnGreen}>Richtig</button>
+                        <button onClick={() => handleEvaluation("partial")} style={btnYellow}>Teilweise</button>
+                        <button onClick={() => handleEvaluation("wrong")} style={btnRed}>Falsch</button>
+                    </div>
+                </>
             )}
         </div>
     );
+}
+
+const btnStyle = {
+    padding: "10px 20px",
+    background: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer"
 };
+
+const btnGreen = { ...btnStyle, background: "#28a745" };
+const btnRed = { ...btnStyle, background: "#dc3545" };
+const btnYellow = { ...btnStyle, background: "#ffc107", color: "#000" };
 
 export default ExamSimulation;
