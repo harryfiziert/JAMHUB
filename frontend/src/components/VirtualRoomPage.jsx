@@ -55,8 +55,20 @@ const VirtualRoomPage = () => {
                 <h2 style={styles.header}>Meine Räume</h2>
 
                 <div style={styles.actions}>
-                    <button style={styles.button} onClick={() => navigate("/room/create")}>➕ Raum erstellen</button>
-                    <button style={styles.button} onClick={() => navigate("/room/join")}>🔑 Raum beitreten</button>
+                    <button
+                        style={styles.button}
+                        onClick={() => navigate("/room/create", {state: {mode: "create"}})}
+                    >
+                        + Raum erstellen
+                    </button>
+
+                    <button
+                        style={styles.button}
+                        onClick={() => navigate("/room/join", {state: {mode: "join"}})}
+                    >
+                        Raum beitreten
+                    </button>
+
                 </div>
 
                 <div style={styles.roomGrid}>

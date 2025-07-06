@@ -1,9 +1,17 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+
 
 const API_BASE = "http://localhost:8000"; // <-- Backend-Adresse
 
 const VirtualRoomActions = () => {
-    const [mode, setMode] = useState("create");
+    // const [mode, setMode] = useState("create");
+
+    const location = useLocation();
+    const initialMode = location.state?.mode || (location.pathname.includes("join") ? "join" : "create");
+    const [mode, setMode] = useState(initialMode);
+
+
     const [roomId, setRoomId] = useState("");
     const [roomName, setRoomName] = useState("");
     const [password, setPassword] = useState("");
