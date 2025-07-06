@@ -65,20 +65,15 @@ const RoomView = () => {
 
     return (
         <div style={styles.wrapper}>
-            {/* Raumtitel + Steuerbereich */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+            <div style={styles.headerRow}>
                 <div>
                     <h2 style={styles.heading}>{roomData?.title || "Raum"}</h2>
-                    <p style={{ fontSize: "14px", color: "gray" }}>ID: {roomId}</p>
+                    <p style={styles.roomId}>ID: {roomId}</p>
                 </div>
-
                 <div>
-                    {roomData && roomData.creator_id === userId && (
-                        <span style={{ fontSize: "14px", color: "#4CAF50", fontWeight: "bold" }}>
-                            Du bist Besitzer dieses Raums
-                        </span>
-                    )}
-                    {roomData && roomData.creator_id !== userId && (
+                    {roomData && roomData.creator_id === userId ? (
+                        <span style={styles.ownerBadge}>Du bist Besitzer dieses Raums</span>
+                    ) : (
                         <button onClick={handleLeaveRoom} style={styles.leaveButton}>
                             Raum verlassen
                         </button>
@@ -88,12 +83,13 @@ const RoomView = () => {
 
             <ProgressTracker userId={userId} roomId={roomId} key={`progress-${refreshKey}`} />
             <hr style={styles.hr} />
+
             <Upload roomId={roomId} onUploadSuccess={checkFlashcards} />
             <hr style={styles.hr} />
 
             {hasFlashcards && (
                 <>
-                    <div style={{ display: "flex", justifyContent: "center", gap: "24px", marginBottom: "32px" }}>
+                    <div style={styles.buttonRow}>
                         <button style={styles.learnButton} onClick={handleStartLearning}>
                             Lernen starten
                         </button>
@@ -106,6 +102,7 @@ const RoomView = () => {
             )}
 
             <Flashcards roomId={roomId} key={`flashcards-${refreshKey}`} />
+            <hr style={styles.hr} />
             <Leaderboard roomId={roomId} key={`leaderboard-${refreshKey}`} />
             <RoomDiagram roomId={roomId} refreshKey={refreshKey} />
         </div>
@@ -122,10 +119,41 @@ const styles = {
         borderRadius: "12px",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)",
     },
+    headerRow: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "30px",
+    },
     heading: {
         margin: 0,
         fontSize: "28px",
         fontWeight: "bold",
+        color: "var(--text-color)",
+    },
+    roomId: {
+        fontSize: "14px",
+        color: "gray",
+    },
+    ownerBadge: {
+        fontSize: "14px",
+        color: "#4CAF50",
+        fontWeight: "bold"
+    },
+    leaveButton: {
+        backgroundColor: "#dc3545",
+        color: "white",
+        padding: "8px 16px",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontWeight: "bold"
+    },
+    buttonRow: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "24px",
+        marginBottom: "32px",
     },
     learnButton: {
         padding: "10px 20px",
@@ -149,19 +177,10 @@ const styles = {
         fontWeight: "bold",
         boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)"
     },
-    leaveButton: {
-        backgroundColor: "#dc3545",
-        color: "white",
-        padding: "8px 16px",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-        fontWeight: "bold"
-    },
     hr: {
         margin: "40px 0",
         border: "none",
-        borderTop: "1px solid #444"
+        borderTop: "1px solid var(--border-color)"
     }
 };
 
