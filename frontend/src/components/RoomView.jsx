@@ -32,7 +32,7 @@ const RoomView = () => {
 
     return (
         <div style={styles.wrapper}>
-            <h2 style={styles.heading}>📚 Raum: {roomId}</h2>
+            <h2 style={styles.heading}>Raum: {roomId}</h2>
 
             <ProgressTracker userId={userId} roomId={roomId} />
             <Upload roomId={roomId} />

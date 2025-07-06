@@ -6,6 +6,7 @@ function Leaderboard({ roomId }) {
 
     useEffect(() => {
         fetch(`/leaderboard/${roomId}`)
+
             .then(res => res.json())
             .then(data => {
                 console.log("Leaderboard-Response:", data);
@@ -13,14 +14,20 @@ function Leaderboard({ roomId }) {
                 setLoading(false);
             })
 
+
+
             .catch(err => {
                 console.error("Fehler beim Laden des Leaderboards:", err);
                 setLoading(false);
             });
+
     }, [roomId]);
 
+
+
+
     if (loading) {
-        return <p>🏁 Lade Leaderboard...</p>;
+        return <p> Lade Leaderboard...</p>;
     }
 
     if (entries.length === 0) {
@@ -29,7 +36,7 @@ function Leaderboard({ roomId }) {
 
     return (
         <div style={{ marginTop: "2rem" }}>
-            <h3 style={{ marginBottom: "1rem" }}>📊 Leaderboard (gelernt)</h3>
+            <h3 style={{ marginBottom: "1rem" }}>Leaderboard </h3>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                 <tr>
@@ -40,9 +47,11 @@ function Leaderboard({ roomId }) {
                 </thead>
                 <tbody>
                 {entries.map((entry, i) => (
-                    <tr key={entry.user_id}>
+                    <tr
+                        key={entry.user_id}
+                    >
+
                         <td style={tdStyle}>{i + 1}</td>
-                        {/*<td style={tdStyle}>{entry.user_id}</td>*/}
                         <td style={tdStyle}>{entry.username}</td>
                         <td style={tdStyle}>{entry.learned_count}</td>
                     </tr>
