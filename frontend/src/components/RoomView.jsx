@@ -9,17 +9,22 @@ const RoomView = () => {
     const { roomId } = useParams();
     const userId = localStorage.getItem("userId");
     const [hasFlashcards, setHasFlashcards] = useState(false);
+    const [roomData, setRoomData] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        console.log("2")
+        fetch(`http://localhost:8000/room/${roomId}`)
+            .then((res) => res.json())
+            .then((data) => setRoomData(data))
+            .catch((err) => console.error("Fehler beim Laden des Raums:", err));
+    }, [roomId]);
 
+    useEffect(() => {
         fetch(`http://localhost:8000/flashcards/by-room-and-user/${roomId}/${userId}`)
             .then((res) => res.json())
             .then((data) => setHasFlashcards(data.length > 0))
             .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
     }, [roomId, userId]);
-
 
     const handleStartLearning = () => {
         navigate(`/learn/${roomId}`);
@@ -29,10 +34,47 @@ const RoomView = () => {
         navigate(`/exam/${roomId}`);
     };
 
+    const handleLeaveRoom = async () => {
+        if (!window.confirm("Möchtest du diesen Raum wirklich verlassen?")) return;
+
+        try {
+            const res = await fetch(`http://localhost:8000/room/${roomId}/remove-user/${userId}`, {
+                method: "DELETE"
+            });
+
+            if (res.ok) {
+                alert("Du hast den Raum verlassen.");
+                navigate("/rooms", { replace: true });
+            } else {
+                alert("Fehler beim Verlassen des Raums.");
+            }
+        } catch (error) {
+            console.error("Fehler:", error);
+            alert("Verbindungsfehler.");
+        }
+    };
 
     return (
         <div style={styles.wrapper}>
-            <h2 style={styles.heading}>Raum: {roomId}</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2 style={styles.heading}>Raum: {roomId}</h2>
+
+                {roomData && roomData.owner !== userId && (
+                    <button
+                        onClick={handleLeaveRoom}
+                        style={{
+                            backgroundColor: "#dc3545",
+                            color: "white",
+                            padding: "8px 16px",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer"
+                        }}
+                    >
+                        Raum verlassen
+                    </button>
+                )}
+            </div>
 
             <ProgressTracker userId={userId} roomId={roomId} />
             <Upload roomId={roomId} />
@@ -50,11 +92,8 @@ const RoomView = () => {
                 </div>
             )}
 
-
             <Flashcards roomId={roomId} />
-
             <Leaderboard roomId={roomId} />
-
         </div>
     );
 };
@@ -74,12 +113,6 @@ const styles = {
         fontSize: "24px",
         fontWeight: "bold",
     },
-    flashcardHeader: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "10px",
-    },
     learnButton: {
         padding: "10px 20px",
         backgroundColor: "#4CAF50",
@@ -88,10 +121,6 @@ const styles = {
         borderRadius: "5px",
         cursor: "pointer",
         fontSize: "16px",
-    },
-    hr: {
-        margin: "40px 0",
-        borderColor: "var(--border-color)",
     },
     examButton: {
         padding: "10px 20px",
@@ -102,7 +131,10 @@ const styles = {
         cursor: "pointer",
         fontSize: "16px",
     },
-
+    hr: {
+        margin: "40px 0",
+        borderColor: "var(--border-color)",
+    }
 };
 
 export default RoomView;
