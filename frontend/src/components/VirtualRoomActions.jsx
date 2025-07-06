@@ -1,16 +1,13 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-
+import { useLocation, useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:8000"; // <-- Backend-Adresse
 
 const VirtualRoomActions = () => {
-    // const [mode, setMode] = useState("create");
-
     const location = useLocation();
+    const navigate = useNavigate();
     const initialMode = location.state?.mode || (location.pathname.includes("join") ? "join" : "create");
     const [mode, setMode] = useState(initialMode);
-
 
     const [roomId, setRoomId] = useState("");
     const [roomName, setRoomName] = useState("");
@@ -37,9 +34,7 @@ const VirtualRoomActions = () => {
 
             const data = await res.json();
             if (res.ok) {
-                setStatus(` Raum '${roomName}' erfolgreich erstellt (ID: ${data.id})`);
-                setRoomName("");
-                setPassword("");
+                navigate(`/room/${data.id}`);
             } else {
                 setStatus("Fehler beim Erstellen: " + data.detail);
             }
@@ -60,12 +55,11 @@ const VirtualRoomActions = () => {
                     const addUserRes = await fetch(`${API_BASE}/room/${roomId}/add-user/${creatorId}`, {
                         method: "POST"
                     });
-                    const addUserData = await addUserRes.json();
 
                     if (addUserRes.ok) {
-                        setStatus("Beitritt erfolgreich!");
+                        navigate(`/room/${roomId}`);
                     } else {
-                        setStatus("Beigetreten, aber User nicht hinzugefügt: " + addUserData.message);
+                        setStatus("Beigetreten, aber User nicht hinzugefügt.");
                     }
                 } else {
                     setStatus("Falsches Passwort");
