@@ -5,7 +5,8 @@ from db.dbConnection import db
 import random
 import string
 from bson import ObjectId
-from routes.flashcards import collection as flashcard_collection
+from db.dbConnection import room_collection, flashcard_collection, progress_collection, comment_collection
+
 import copy
 
 router = APIRouter()
@@ -72,15 +73,24 @@ async def add_user_to_room(code: str, uid: str):
 # User aus Raum entfernen
 @router.delete("/room/{code}/remove-user/{uid}")
 async def remove_user_from_room(code: str, uid: str):
-    room = collection.find_one({"id": code})
+    room = room_collection.find_one({"id": code.upper()})
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
 
     if uid not in room["user"]:
         return {"message": "User not in room"}
 
-    collection.update_one({"id": code}, {"$pull": {"user": uid}})
-    return {"message": f"User {uid} removed from room {code}"}
+    # Nutzer aus dem Raum entfernen
+    room_collection.update_one({"id": code}, {"$pull": {"user": uid}})
+
+    # Flashcards des Nutzers in dem Raum löschen
+    flashcard_collection.delete_many({"user_id": uid, "room_id": code})
+
+    # Fortschritt und Kommentare löschen
+    progress_collection.delete_many({"user_id": uid, "room_id": code})
+    comment_collection.delete_many({"user_id": uid, "room_id": code})
+
+    return {"message": f"User {uid} removed from room {code} and associated data deleted"}
 
 # Raum löschen
 @router.delete("/room/{code}")

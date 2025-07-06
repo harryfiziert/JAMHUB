@@ -17,5 +17,11 @@ try:
 except Exception as e:
     print(e)
 
+room_collection = db["rooms"]
+flashcard_collection = db["flashcards"]
+progress_collection = db["progress"]
+comment_collection = db["comments"]
+user_collection = db["users"]
+
 
 
