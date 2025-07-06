@@ -4,6 +4,7 @@ import Upload from "./Upload";
 import Flashcards from "./Flashcard";
 import ProgressTracker from "./ProgressTracker";
 import Leaderboard from "./Leaderboard";
+import RoomDiagram from "./RoomDiagram";
 
 const RoomView = () => {
     const { roomId } = useParams();
@@ -96,6 +97,8 @@ const RoomView = () => {
             )}
             <Flashcards roomId={roomId} key={`flashcards-${refreshKey}`} />
             <Leaderboard roomId={roomId} key={`leaderboard-${refreshKey}`} />
+            <RoomDiagram roomId={roomId} refreshKey={refreshKey} />
+
 
         </div>
     );
