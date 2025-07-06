@@ -16,6 +16,8 @@ export default defineConfig({
         secure: false
       },
       '/exam-simulation': 'http://localhost:8000',
+      '/leaderboard': 'http://localhost:8000',
+      '/user': 'http://localhost:8000',
     }
   }
 });

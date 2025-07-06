@@ -3,19 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import Upload from "./Upload";
 import Flashcards from "./Flashcard";
 import ProgressTracker from "./ProgressTracker";
+import Leaderboard from "./Leaderboard";
 
 const RoomView = () => {
     const { roomId } = useParams();
     const userId = localStorage.getItem("userId");
     const [hasFlashcards, setHasFlashcards] = useState(false);
     const navigate = useNavigate();
-
-    // useEffect(() => {
-    //     fetch(`http://localhost:8000/flashcards/by-room/${roomId}`)
-    //         .then((res) => res.json())
-    //         .then((data) => setHasFlashcards(data.length > 0))
-    //         .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
-    // }, [roomId]);
 
     useEffect(() => {
         console.log("2")
@@ -58,6 +52,9 @@ const RoomView = () => {
 
 
             <Flashcards roomId={roomId} />
+
+            <Leaderboard roomId={roomId} />
+
         </div>
     );
 };
