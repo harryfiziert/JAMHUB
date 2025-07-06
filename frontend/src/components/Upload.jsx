@@ -1,12 +1,13 @@
 import React, { useRef, useState } from "react";
 
-const Upload = ({ roomId }) => {
+const Upload = ({ roomId, onUploadSuccess }) => {
     const fileInputRef = useRef(null);
     const [fileName, setFileName] = useState(null);
     const [error, setError] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [successMessage, setSuccessMessage] = useState(null);
-    const userId = localStorage.getItem("userId"); 
+    const userId = localStorage.getItem("userId");
+
     const handleFile = async (file) => {
         if (file.type !== "application/pdf") {
             setError("Nur PDF-Dateien sind erlaubt.");
@@ -25,20 +26,19 @@ const Upload = ({ roomId }) => {
         formData.append("room_id", roomId);
 
         try {
-            // const res = await fetch(`http://localhost:8000/upload-pdf/${roomId}`, {
-            //     method: "POST",
-            //     body: formData,
-            // });
             const res = await fetch("http://localhost:8000/flashcards/from-pdf", {
                 method: "POST",
                 body: formData,
             });
 
-
             if (!res.ok) throw new Error("Upload fehlgeschlagen");
 
             const data = await res.json();
             setSuccessMessage(`✅ Erfolgreich verarbeitet: ${data.message}`);
+
+            console.log("✅ Upload erfolgreich, callback wird aufgerufen");
+            if (onUploadSuccess) onUploadSuccess();
+
         } catch (err) {
             console.error("❌ Upload fehlgeschlagen:", err);
             setError("Fehler beim Hochladen.");

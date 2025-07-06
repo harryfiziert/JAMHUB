@@ -19,11 +19,21 @@ const RoomView = () => {
             .catch((err) => console.error("Fehler beim Laden des Raums:", err));
     }, [roomId]);
 
-    useEffect(() => {
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const checkFlashcards = () => {
+        console.log("checkFlashcards triggered");
         fetch(`http://localhost:8000/flashcards/by-room-and-user/${roomId}/${userId}`)
             .then((res) => res.json())
-            .then((data) => setHasFlashcards(data.length > 0))
+            .then((data) => {
+                setHasFlashcards(data.length > 0);
+                setRefreshKey(prev => prev + 1);
+            })
             .catch((err) => console.error("Fehler beim Laden der Flashcards:", err));
+    };
+
+    useEffect(() => {
+        checkFlashcards();
     }, [roomId, userId]);
 
     const handleStartLearning = () => {
@@ -76,24 +86,17 @@ const RoomView = () => {
                 )}
             </div>
 
-            <ProgressTracker userId={userId} roomId={roomId} />
-            <Upload roomId={roomId} />
-
-            <hr style={styles.hr} />
-
+            <ProgressTracker userId={userId} roomId={roomId} key={`progress-${refreshKey}`} />
+            <Upload roomId={roomId} onUploadSuccess={checkFlashcards} />
             {hasFlashcards && (
-                <div style={{ display: "flex", gap: "10px" }}>
-                    <button onClick={handleStartLearning} style={styles.learnButton}>
-                        Lernen starten
-                    </button>
-                    <button onClick={handleStartExam} style={styles.examButton}>
-                        Prüfung starten
-                    </button>
+                <div>
+                    <button onClick={handleStartLearning}>Lernen starten</button>
+                    <button onClick={handleStartExam}>Prüfung starten</button>
                 </div>
             )}
+            <Flashcards roomId={roomId} key={`flashcards-${refreshKey}`} />
+            <Leaderboard roomId={roomId} key={`leaderboard-${refreshKey}`} />
 
-            <Flashcards roomId={roomId} />
-            <Leaderboard roomId={roomId} />
         </div>
     );
 };
