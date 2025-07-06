@@ -10,7 +10,7 @@ const ProgressTracker = ({ userId, roomId }) => {
         const res = await axios.get(`http://localhost:8000/progress/${userId}/${roomId}`);
         setProgress(res.data);
       } catch (err) {
-        console.error("❌ Fehler beim Laden des Fortschritts:", err);
+        console.error(" Fehler beim Laden des Fortschritts:", err);
       }
     };
 
@@ -20,16 +20,24 @@ const ProgressTracker = ({ userId, roomId }) => {
   if (!progress) return null;
 
   return (
-    <div style={styles.wrapper}>
-      <h3 style={styles.heading}>📈 Lernfortschritt in diesem Raum</h3>
-      <div style={styles.progressBarBackground}>
-        <div style={{ ...styles.progressBarFill, width: `${progress.percent}%` }} />
+      <div style={styles.wrapper}>
+        <h3 style={styles.heading}>Lernfortschritt in diesem Raum</h3>
+
+        {progress.total_cards > 0 ? (
+            <>
+              <div style={styles.progressBarBackground}>
+                <div style={{ ...styles.progressBarFill, width: `${progress.percent}%` }} />
+              </div>
+              <p style={styles.percentText}>
+                {progress.percent}% gelernt ({progress.learned_cards} von {progress.total_cards})
+              </p>
+            </>
+        ) : (
+            <p style={styles.percentText}>Noch keine Karten im Raum</p>
+        )}
       </div>
-      <p style={styles.percentText}>
-        {progress.percent}% gelernt ({progress.learned_cards} von {progress.total_cards})
-      </p>
-    </div>
   );
+
 };
 
 const styles = {
