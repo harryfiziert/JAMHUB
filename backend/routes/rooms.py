@@ -19,7 +19,6 @@ class Room(BaseModel):
     description: str
     password: str
     user: List[str] = []
-    flashcards: List[str] = []
 
 # Raumcode generieren
 def generate_room_code(length=6):
@@ -66,6 +65,7 @@ async def add_user_to_room(code: str, uid: str):
         new_card["user_id"] = uid
         new_card["original_id"] = str(card["_id"])
         new_card["difficulty"] = {}
+        new_card["learned_at"] = None
         flashcard_collection.insert_one(new_card)
 
     return {"message": f"User {uid} added to room {code} and flashcards copied."}
