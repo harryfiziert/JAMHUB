@@ -38,9 +38,9 @@ app.include_router(flashcard_router)
 app.include_router(progress_router)
 
 print("✅ main.py geladen")
-@app.on_event("startup")
-@repeat_every(seconds=3000)
-def schedule_reminders():
-    print("test")
-    send_reminders()
-    return {"status": "Reminder sent"}
+# @app.on_event("startup")
+# @repeat_every(seconds=3000)
+# def schedule_reminders():
+#     print("test")
+#     send_reminders()
+#     return {"status": "Reminder sent"}

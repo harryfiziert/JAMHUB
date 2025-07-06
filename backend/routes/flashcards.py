@@ -3,9 +3,10 @@ from pydantic import BaseModel
 from typing import Optional, List
 from dotenv import load_dotenv
 from bson import ObjectId
-from starlette.responses import JSONResponse
-
+# from starlette.responses import JSONResponse
+from fastapi.responses import JSONResponse
 from db.dbConnection import db
+from bson import ObjectId
 import os
 from openai import OpenAI
 import fitz  # PyMuPDF
@@ -15,7 +16,7 @@ import random
 from fastapi import Form
 from bson.json_util import dumps
 from pydantic import BaseModel, Extra
-
+from bson.errors import InvalidId
 
 
 router = APIRouter()
@@ -25,7 +26,7 @@ api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 collection = db["flashcards"]
 comments = db["comments"]
-
+user_collection = db["users"]
 
 # ─────────────── MODELS ───────────────
 
@@ -329,3 +330,53 @@ def delete_comment(comment_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Comment not found")
     return {"message": "Comment deleted"}
+
+# ─────────────── leaderboard ───────────────
+
+@router.get("/leaderboard/{room_id}")
+def get_leaderboard(room_id: str):
+    cards = list(collection.find({"room_id": room_id}))
+    user_stats = {}
+
+    for card in cards:
+        uid = card["user_id"]  # ist ein String mit MongoDB-ObjectId
+        if uid not in user_stats:
+            user_stats[uid] = 0
+        if card.get("learned") is True:
+            user_stats[uid] += 1
+
+    leaderboard = []
+    for uid, count in user_stats.items():
+        username = "Unbekannt"
+        try:
+            if ObjectId.is_valid(uid):
+                user = user_collection.find_one({"_id": ObjectId(uid)})
+            else:
+                print(f"Ungültige ObjectId (übersprungen): {uid}")
+                user = None
+
+            if user and "username" in user:
+                username = user["username"]
+                print(username)
+        except Exception as e:
+            print(f"Fehler beim Laden von User {uid}: {e}")
+
+        leaderboard.append({
+            "user_id": uid,
+            "username": username,
+            "learned_count": count
+        })
+
+    leaderboard.sort(key=lambda x: x["learned_count"], reverse=True)
+    return leaderboard[:10]
+
+
+    # leaderboard = []
+    #
+    # leaderboard.append({
+    #     "user_id": "asdjasjd",
+    #     "username": "asdasdsa",
+    #     "learned_count": 3
+    # })
+
+    # return leaderboard
