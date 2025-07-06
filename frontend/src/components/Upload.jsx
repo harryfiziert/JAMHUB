@@ -78,7 +78,7 @@ const Upload = ({ roomId, onUploadSuccess }) => {
                 }}
             >
                 <p style={{ marginBottom: "16px", fontSize: "16px", color: "#333" }}>
-                    📄 Ziehe eine PDF hierher oder klicke zum Hochladen
+                    Ziehe eine PDF hierher oder klicke zum Hochladen
                 </p>
                 <input
                     type="file"
