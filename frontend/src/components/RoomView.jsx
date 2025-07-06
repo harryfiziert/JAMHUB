@@ -12,6 +12,7 @@ const RoomView = () => {
     const [hasFlashcards, setHasFlashcards] = useState(false);
     const [roomData, setRoomData] = useState(null);
     const navigate = useNavigate();
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         fetch(`http://localhost:8000/room/${roomId}`)
@@ -20,10 +21,7 @@ const RoomView = () => {
             .catch((err) => console.error("Fehler beim Laden des Raums:", err));
     }, [roomId]);
 
-    const [refreshKey, setRefreshKey] = useState(0);
-
     const checkFlashcards = () => {
-        console.log("checkFlashcards triggered");
         fetch(`http://localhost:8000/flashcards/by-room-and-user/${roomId}/${userId}`)
             .then((res) => res.json())
             .then((data) => {
@@ -67,39 +65,49 @@ const RoomView = () => {
 
     return (
         <div style={styles.wrapper}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 style={styles.heading}>Raum: {roomId}</h2>
+            {/* Raumtitel + Steuerbereich */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+                <div>
+                    <h2 style={styles.heading}>{roomData?.title || "Raum"}</h2>
+                    <p style={{ fontSize: "14px", color: "gray" }}>ID: {roomId}</p>
+                </div>
 
-                {roomData && roomData.owner !== userId && (
-                    <button
-                        onClick={handleLeaveRoom}
-                        style={{
-                            backgroundColor: "#dc3545",
-                            color: "white",
-                            padding: "8px 16px",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer"
-                        }}
-                    >
-                        Raum verlassen
-                    </button>
-                )}
+                <div>
+                    {roomData && roomData.creator_id === userId && (
+                        <span style={{ fontSize: "14px", color: "#4CAF50", fontWeight: "bold" }}>
+                            Du bist Besitzer dieses Raums
+                        </span>
+                    )}
+                    {roomData && roomData.creator_id !== userId && (
+                        <button onClick={handleLeaveRoom} style={styles.leaveButton}>
+                            Raum verlassen
+                        </button>
+                    )}
+                </div>
             </div>
 
             <ProgressTracker userId={userId} roomId={roomId} key={`progress-${refreshKey}`} />
+            <hr style={styles.hr} />
             <Upload roomId={roomId} onUploadSuccess={checkFlashcards} />
+            <hr style={styles.hr} />
+
             {hasFlashcards && (
-                <div>
-                    <button onClick={handleStartLearning}>Lernen starten</button>
-                    <button onClick={handleStartExam}>Prüfung starten</button>
-                </div>
+                <>
+                    <div style={{ display: "flex", justifyContent: "center", gap: "24px", marginBottom: "32px" }}>
+                        <button style={styles.learnButton} onClick={handleStartLearning}>
+                            Lernen starten
+                        </button>
+                        <button style={styles.examButton} onClick={handleStartExam}>
+                            Prüfung starten
+                        </button>
+                    </div>
+                    <hr style={styles.hr} />
+                </>
             )}
+
             <Flashcards roomId={roomId} key={`flashcards-${refreshKey}`} />
             <Leaderboard roomId={roomId} key={`leaderboard-${refreshKey}`} />
             <RoomDiagram roomId={roomId} refreshKey={refreshKey} />
-
-
         </div>
     );
 };
@@ -115,8 +123,8 @@ const styles = {
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)",
     },
     heading: {
-        marginBottom: "30px",
-        fontSize: "24px",
+        margin: 0,
+        fontSize: "28px",
         fontWeight: "bold",
     },
     learnButton: {
@@ -124,22 +132,36 @@ const styles = {
         backgroundColor: "#4CAF50",
         color: "white",
         border: "none",
-        borderRadius: "5px",
+        borderRadius: "8px",
         cursor: "pointer",
         fontSize: "16px",
+        fontWeight: "bold",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)"
     },
     examButton: {
         padding: "10px 20px",
         backgroundColor: "#007bff",
         color: "white",
         border: "none",
-        borderRadius: "5px",
+        borderRadius: "8px",
         cursor: "pointer",
         fontSize: "16px",
+        fontWeight: "bold",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)"
+    },
+    leaveButton: {
+        backgroundColor: "#dc3545",
+        color: "white",
+        padding: "8px 16px",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontWeight: "bold"
     },
     hr: {
         margin: "40px 0",
-        borderColor: "var(--border-color)",
+        border: "none",
+        borderTop: "1px solid #444"
     }
 };
 
