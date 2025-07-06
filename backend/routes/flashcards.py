@@ -46,8 +46,9 @@ class CommentInput(BaseModel):
 
 # ─────────────── FLASHCARDS ───────────────
 def serialize_flashcard(card):
-    card["_id"] = str(card["_id"])  # aus ObjectId → String
+    card["_id"] = str(card["_id"])
     return card
+
 
 @router.post("/flashcards/from-pdf")
 async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: str = Form(...),
@@ -61,6 +62,20 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
 
     chunks = [para.strip() for para in full_text.split("\n\n") if len(para.strip()) > 100]
     created = []
+
+    # Raum laden
+    room = db["rooms"].find_one({"id": room_id})
+    if not room:
+        print(f"Raum mit ID '{room_id}' nicht gefunden.")
+        raise HTTPException(status_code=404, detail="Raum nicht gefunden")
+
+    is_creator = room.get("creator_id") == user_id
+    user_list = room.get("user", [])
+
+    print(f"Raum gefunden: {room_id}")
+    print(f"Hochladender User: {user_id}")
+    print(f"Ist Ersteller? {is_creator}")
+    print(f"Nutzer im Raum: {user_list}")
 
     for chunk in chunks:
         try:
@@ -85,14 +100,36 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
             )
             raw = response.choices[0].message.content.strip()
             cards = json.loads(raw)
+
             for card in cards:
-                card["user_id"] = user_id
-                card["room_id"] = room_id
-                card["learned"] = False
-                card["difficulty"] = {}
-                result = collection.insert_one(card)
-                card["_id"] = str(result.inserted_id)
-                created.append(card)
+                base_card = {
+                    "question": card["question"],
+                    "answer": card["answer"],
+                    "room_id": room_id,
+                    "learned": False,
+                    "learned_at": None,
+                    "difficulty": {}
+                }
+
+                # Karte für Ersteller speichern
+                creator_card = base_card.copy()
+                creator_card["user_id"] = user_id
+                result = collection.insert_one(creator_card)
+                creator_card["_id"] = str(result.inserted_id)
+                created.append(creator_card)
+                print(f"Karte erstellt für Ersteller {user_id}: {creator_card['_id']}")
+
+                # Wenn Ersteller → verteile Karte an andere
+                if is_creator:
+                    for uid in user_list:
+                        if uid != user_id:
+                            copied = base_card.copy()
+                            copied["user_id"] = uid
+                            copied["_id"] = ObjectId()
+                            copied["original_id"] = str(result.inserted_id)
+                            collection.insert_one(copied)
+                            print(f"➡️ Karte verteilt an User {uid} (Kopie von {creator_card['_id']})")
+
         except Exception as e:
             print("GPT-Fehler:", e)
             # BREAK und Dummy-Karten erzeugen
@@ -103,6 +140,7 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                     "user_id": user_id,
                     "room_id": room_id,
                     "learned": False,
+                    "learned_at": None,
                     "difficulty": {}
                 },
                 {
@@ -111,6 +149,7 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                     "user_id": user_id,
                     "room_id": room_id,
                     "learned": False,
+                    "learned_at": None,
                     "difficulty": {}
                 },
                 {
@@ -119,23 +158,36 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                     "user_id": user_id,
                     "room_id": room_id,
                     "learned": False,
+                    "learned_at": None,
                     "difficulty": {}
                 }
             ]
+            print("Dummy-Karten eingefügt.")
             for card in created:
                 result = collection.insert_one(card)
                 card["_id"] = str(result.inserted_id)
-            break
 
-    return {"message": "PDF verarbeitet", "cards": created, "errors": [c for c in created if "error" in c]}
+                # Dummy-Karten auch verteilen
+                if is_creator:
+                    for uid in user_list:
+                        if uid != user_id:
+                            copied = card.copy()
+                            copied["_id"] = ObjectId()
+                            copied["user_id"] = uid
+                            copied["original_id"] = card["_id"]
+                            collection.insert_one(copied)
+                            print(f"Dummy-Karte verteilt an User {uid} (Kopie von {card['_id']})")
+
+    return {"message": "PDF verarbeitet", "cards": created}
 
 
-@router.get("/flashcards")
-def get_all_flashcards():
-    cards = list(collection.find())
-    for card in cards:
-        card["_id"] = str(card["_id"])
-    return cards
+
+# @router.get("/flashcards")
+# def get_all_flashcards():
+#     cards = list(collection.find())
+#     for card in cards:
+#         card["_id"] = str(card["_id"])
+#     return cards
 
 
 @router.get("/flashcard/{id}")
@@ -364,26 +416,6 @@ def get_leaderboard(room_id: str):
     return leaderboard[:10]
 
 
-# @router.get("/learning-stats/{user_id}")
-# def get_learning_stats(user_id: str):
-#     # Nur Karten mit learned = True und Zeitstempel vorhanden
-#     cards = collection.find({
-#         "user_id": user_id,
-#         "learned": True,
-#         "learned_at": {"$exists": True}
-#     })
-#
-#     # Gruppierung nach Datum (YYYY-MM-DD)
-#     stats = {}
-#     for card in cards:
-#         date_str = card["learned_at"].strftime("%Y-%m-%d")
-#         stats[date_str] = stats.get(date_str, 0) + 1
-#
-#     # Umwandlung in sortierte Liste
-#     result = [{"date": date, "count": stats[date]} for date in sorted(stats)]
-#     return result
-
-
 @router.get("/learning-stats/{user_id}")
 def get_learning_stats(user_id: str):
     from datetime import datetime, timedelta
@@ -400,8 +432,11 @@ def get_learning_stats(user_id: str):
     # Zählen nach Datum
     count_by_day = {}
     for card in cards:
-        date = card["learned_at"].date()
-        count_by_day[date] = count_by_day.get(date, 0) + 1
+        try:
+            date = card["learned_at"].date()
+            count_by_day[date] = count_by_day.get(date, 0) + 1
+        except Exception:
+            continue
 
     # Alle letzten 14 Tage einbauen
     stats = []
@@ -411,5 +446,5 @@ def get_learning_stats(user_id: str):
             "date": day.strftime("%Y-%m-%d"),
             "count": count_by_day.get(day, 0)
         })
-
     return stats
+
