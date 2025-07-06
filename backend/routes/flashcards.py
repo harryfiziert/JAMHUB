@@ -2,23 +2,18 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional, List
 from dotenv import load_dotenv
-from bson import ObjectId
-# from starlette.responses import JSONResponse
 from fastapi.responses import JSONResponse
 from db.dbConnection import db
 from bson import ObjectId
 import os
 from openai import OpenAI
-import fitz  # PyMuPDF
+import fitz
 import json
-from datetime import datetime
 import random
 from fastapi import Form
 from bson.json_util import dumps
 from pydantic import BaseModel, Extra
-from bson.errors import InvalidId
-
-
+from datetime import datetime, timezone
 router = APIRouter()
 load_dotenv()
 
@@ -185,10 +180,6 @@ def get_flashcards_by_room(room_id: str):
     return cards
 
 
-# @router.get("/flashcards/by-room-and-user/{room_id}/{user_id}")
-# async def get_flashcards_by_room_and_user(room_id: str, user_id: str):
-#     flashcards = list(collection.find({"room_id": room_id, "user_id": user_id}))
-#     return json.loads(dumps(flashcards))
 @router.get("/flashcards/by-room-and-user/{room_id}/{user_id}")
 def get_flashcards_by_room_and_user(room_id: str, user_id: str):
     flashcards = collection.find({"room_id": room_id, "user_id": user_id})
@@ -248,7 +239,6 @@ def get_flashcards_to_learn(user_id: str, room_id: str):
     }))
     return JSONResponse(content=json.loads(dumps(cards)))
 
-
 @router.post("/flashcards/{flashcard_id}/rate_difficulty")
 def rate_flashcard_difficulty(flashcard_id: str, payload: dict):
     user_id = payload.get("user_id")
@@ -266,6 +256,9 @@ def rate_flashcard_difficulty(flashcard_id: str, payload: dict):
 
     if score == 0:
         update["learned"] = True
+
+        update["learned_at"] = datetime.now(timezone.utc)
+
 
     result = collection.update_one(
         {"_id": ObjectId(flashcard_id)},
@@ -331,7 +324,7 @@ def delete_comment(comment_id: str):
         raise HTTPException(status_code=404, detail="Comment not found")
     return {"message": "Comment deleted"}
 
-# ─────────────── leaderboard ───────────────
+# ─────────────── leaderboard + graphics ───────────────
 
 @router.get("/leaderboard/{room_id}")
 def get_leaderboard(room_id: str):
@@ -339,7 +332,7 @@ def get_leaderboard(room_id: str):
     user_stats = {}
 
     for card in cards:
-        uid = card["user_id"]  # ist ein String mit MongoDB-ObjectId
+        uid = card["user_id"]
         if uid not in user_stats:
             user_stats[uid] = 0
         if card.get("learned") is True:
@@ -371,12 +364,52 @@ def get_leaderboard(room_id: str):
     return leaderboard[:10]
 
 
-    # leaderboard = []
-    #
-    # leaderboard.append({
-    #     "user_id": "asdjasjd",
-    #     "username": "asdasdsa",
-    #     "learned_count": 3
-    # })
+# @router.get("/learning-stats/{user_id}")
+# def get_learning_stats(user_id: str):
+#     # Nur Karten mit learned = True und Zeitstempel vorhanden
+#     cards = collection.find({
+#         "user_id": user_id,
+#         "learned": True,
+#         "learned_at": {"$exists": True}
+#     })
+#
+#     # Gruppierung nach Datum (YYYY-MM-DD)
+#     stats = {}
+#     for card in cards:
+#         date_str = card["learned_at"].strftime("%Y-%m-%d")
+#         stats[date_str] = stats.get(date_str, 0) + 1
+#
+#     # Umwandlung in sortierte Liste
+#     result = [{"date": date, "count": stats[date]} for date in sorted(stats)]
+#     return result
 
-    # return leaderboard
+
+@router.get("/learning-stats/{user_id}")
+def get_learning_stats(user_id: str):
+    from datetime import datetime, timedelta
+
+    today = datetime.utcnow().date()
+    start_date = today - timedelta(days=13)
+
+    # Alle Karten des Users mit learned_at
+    cards = collection.find({
+        "user_id": user_id,
+        "learned_at": {"$exists": True}
+    })
+
+    # Zählen nach Datum
+    count_by_day = {}
+    for card in cards:
+        date = card["learned_at"].date()
+        count_by_day[date] = count_by_day.get(date, 0) + 1
+
+    # Alle letzten 14 Tage einbauen
+    stats = []
+    for i in range(14):
+        day = start_date + timedelta(days=i)
+        stats.append({
+            "date": day.strftime("%Y-%m-%d"),
+            "count": count_by_day.get(day, 0)
+        })
+
+    return stats
