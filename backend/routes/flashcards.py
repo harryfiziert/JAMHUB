@@ -354,18 +354,35 @@ def add_comment(comment: CommentInput):
 
 @router.get("/comments/{flashcard_id}")
 def get_comments(flashcard_id: str):
-    result = list(comments.find({"flashcard_id": flashcard_id}).sort("created_at", -1))
-    for r in result:
-        r["_id"] = str(r["_id"])
-    return result
+    comment_list = list(comments.find({"flashcard_id": flashcard_id}))
+    for c in comment_list:
+        user = db["users"].find_one({"_id": ObjectId(c["user_id"])})
+        c["username"] = user["username"] if user and "username" in user else c["user_id"]
+        c["_id"] = str(c["_id"])
+    return comment_list
 
 
 @router.delete("/comments/{comment_id}")
-def delete_comment(comment_id: str):
-    result = comments.delete_one({"_id": ObjectId(comment_id)})
-    if result.deleted_count == 0:
+def delete_comment(comment_id: str, user_id: str):
+    comment = comments.find_one({"_id": ObjectId(comment_id)})
+    if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
+
+    flashcard = collection.find_one({"_id": ObjectId(comment["flashcard_id"])})
+    if not flashcard:
+        raise HTTPException(status_code=404, detail="Flashcard not found")
+
+    room = db["rooms"].find_one({"id": flashcard["room_id"]})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    is_owner = (comment["user_id"] == user_id) or (room.get("creator_id") == user_id)
+    if not is_owner:
+        raise HTTPException(status_code=403, detail="Not authorized to delete comment")
+
+    result = comments.delete_one({"_id": ObjectId(comment_id)})
     return {"message": "Comment deleted"}
+
 
 # ─────────────── leaderboard + graphics ───────────────
 
