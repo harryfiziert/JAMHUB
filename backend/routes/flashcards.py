@@ -313,6 +313,18 @@ def rate_flashcard_difficulty(flashcard_id: str, payload: dict):
 
     return {"status": "ok", "updated": result.modified_count}
 
+@router.post("/flashcards/reset-progress/{room_id}/{user_id}")
+def reset_progress(room_id: str, user_id: str):
+    result = collection.update_many(
+        {"room_id": room_id, "user_id": user_id},
+        {"$set": {
+            "learned": False,
+            "learned_at": None,
+            "difficulty": {}
+        }}
+    )
+    return {"message": "Fortschritt zurückgesetzt", "modified": result.modified_count}
+
 
 # ─────────────── 🆕 Exam Simulation Endpoint ───────────────
 
