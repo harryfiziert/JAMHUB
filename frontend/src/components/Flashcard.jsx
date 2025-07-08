@@ -20,13 +20,15 @@ const Flashcards = ({ roomId }) => {
                 }
                 setCards(data);
                 setLoading(false);
-                data.forEach((card) => fetchComments(card._id));
+                data.forEach((card) => fetchComments(resolveId(card)));
             })
             .catch((err) => {
                 console.error("Fehler beim Laden:", err);
                 setLoading(false);
             });
     }, [roomId, userId]);
+
+    const resolveId = (card) => card.original_id || card._id;
 
     const fetchComments = (cardId) => {
         fetch(`http://127.0.0.1:8000/comments/${cardId}`)
@@ -74,8 +76,9 @@ const Flashcards = ({ roomId }) => {
         setNewComment((prev) => ({ ...prev, [cardId]: value }));
     };
 
-    const handleCommentSubmit = async (cardId) => {
-        const content = newComment[cardId]?.trim();
+    const handleCommentSubmit = async (card) => {
+        const targetId = resolveId(card);
+        const content = newComment[targetId]?.trim();
         if (!content || !userId) return;
 
         try {
@@ -83,7 +86,7 @@ const Flashcards = ({ roomId }) => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    flashcard_id: cardId,
+                    flashcard_id: targetId,
                     user_id: userId,
                     content,
                 }),
@@ -91,27 +94,28 @@ const Flashcards = ({ roomId }) => {
 
             if (!res.ok) throw new Error("Kommentar konnte nicht gesendet werden");
 
-            setNewComment((prev) => ({ ...prev, [cardId]: "" }));
-            fetchComments(cardId);
+            setNewComment((prev) => ({ ...prev, [targetId]: "" }));
+            fetchComments(targetId);
         } catch (err) {
             console.error("Kommentar speichern fehlgeschlagen:", err);
         }
     };
 
-    const handleCommentDelete = async (commentId, cardId) => {
+    const handleCommentDelete = async (commentId, card) => {
+        const targetId = resolveId(card);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/comments/${commentId}`, {
+            const res = await fetch(`http://127.0.0.1:8000/comments/${commentId}?user_id=${userId}`, {
                 method: "DELETE",
             });
             if (!res.ok) throw new Error("Löschen fehlgeschlagen");
-            fetchComments(cardId);
+            fetchComments(targetId);
         } catch (err) {
             console.error("Kommentar löschen fehlgeschlagen:", err);
         }
     };
 
-    const handleCommentKeyPress = (e, cardId) => {
-        if (e.key === "Enter") handleCommentSubmit(cardId);
+    const handleCommentKeyPress = (e, card) => {
+        if (e.key === "Enter") handleCommentSubmit(card);
     };
 
     if (loading) {
@@ -124,109 +128,162 @@ const Flashcards = ({ roomId }) => {
             {cards.length === 0 ? (
                 <p>Keine Flashcards vorhanden.</p>
             ) : (
-                cards.map((card) => (
-                    <div key={card._id} style={styles.card}>
-                        {editingId === card._id ? (
-                            <>
-                                <input
-                                    name="question"
-                                    value={editData.question}
-                                    onChange={handleChange}
-                                    style={styles.input}
-                                />
-                                <input
-                                    name="answer"
-                                    value={editData.answer}
-                                    onChange={handleChange}
-                                    style={styles.input}
-                                />
-                                <button onClick={() => handleSave(card._id)} style={styles.saveButton}>
-                                    Speichern
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <p><strong>Q:</strong> {card.question}</p>
-                                <p><strong>A:</strong> {card.answer}</p>
-                                <button onClick={() => handleEditClick(card)} style={styles.editButton}>
-                                    Bearbeiten
-                                </button>
-                            </>
-                        )}
+                cards.map((card) => {
+                    const commentId = resolveId(card);
+                    return (
+                        <div key={card._id} style={styles.card}>
+                            {editingId === card._id ? (
+                                <>
+                                    <input
+                                        name="question"
+                                        value={editData.question}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                    />
+                                    <input
+                                        name="answer"
+                                        value={editData.answer}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                    />
+                                    <button onClick={() => handleSave(card._id)} style={styles.saveButton}>
+                                        Speichern
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <p><strong>Q:</strong> {card.question}</p>
+                                    <p><strong>A:</strong> {card.answer}</p>
+                                    <button onClick={() => handleEditClick(card)} style={styles.editButton}>
+                                        Bearbeiten
+                                    </button>
+                                </>
+                            )}
 
-                        <div>
-                            <strong>Kommentare:</strong>
-                            <ul>
-                                {(comments[card._id] || []).map((c) => (
-                                    <li key={c.id}>
-                                        {c.content}
-                                        <button onClick={() => handleCommentDelete(c.id, card._id)}>🗑</button>
-                                    </li>
-                                ))}
-                            </ul>
-                            <input
-                                type="text"
-                                placeholder="Kommentar..."
-                                value={newComment[card._id] || ""}
-                                onChange={(e) => handleCommentChange(card._id, e.target.value)}
-                                onKeyDown={(e) => handleCommentKeyPress(e, card._id)}
-                            />
-                            <button onClick={() => handleCommentSubmit(card._id)}>➕</button>
+                            {/* Kommentarbereich */}
+                            <div style={{
+                                maxHeight: "200px",
+                                overflowY: "auto",
+                                marginTop: "12px",
+                                border: "1px solid var(--border-color)",
+                                borderRadius: "6px",
+                                padding: "8px"
+                            }}>
+                                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                                    {(comments[commentId] || []).map((c) => {
+                                        const canDelete = c.user_id === userId || card.user_id === userId;
+                                        return (
+                                            <li key={c._id} style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                                padding: "4px 0"
+                                            }}>
+                                                <span>
+                                                    <strong>{c.username || c.user_id}</strong>: {c.content}
+                                                </span>
+                                                {canDelete && (
+                                                    <button
+                                                        onClick={() => {
+                                                            if (window.confirm("Willst du den Kommentar wirklich löschen?")) {
+                                                                handleCommentDelete(c._id, card);
+                                                            }
+                                                        }}
+                                                        style={{
+                                                            background: "none",
+                                                            border: "none",
+                                                            color: "gray",
+                                                            cursor: "pointer",
+                                                            fontSize: "14px",
+                                                            marginLeft: "8px"
+                                                        }}
+                                                        title="Kommentar löschen"
+                                                    >
+                                                        🗑
+                                                    </button>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+
+                            {/* Neue Kommentar-Eingabe */}
+                            <div style={{ marginTop: "8px", display: "flex", gap: "8px" }}>
+                                <input
+                                    type="text"
+                                    placeholder="Kommentar..."
+                                    value={newComment[commentId] || ""}
+                                    onChange={(e) => handleCommentChange(commentId, e.target.value)}
+                                    onKeyDown={(e) => handleCommentKeyPress(e, card)}
+                                    style={{
+                                        flex: 1,
+                                        padding: "6px 8px",
+                                        border: "1px solid var(--border-color)",
+                                        borderRadius: "6px",
+                                        backgroundColor: "var(--bg-color)",
+                                        color: "var(--text-color)"
+                                    }}
+                                />
+                                <button
+                                    onClick={() => handleCommentSubmit(card)}
+                                    style={{
+                                        padding: "6px 12px",
+                                        backgroundColor: "#007bff",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "6px",
+                                        cursor: "pointer"
+                                    }}
+                                >
+                                    ➕
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))
+                    );
+                })
             )}
         </div>
     );
 };
 
 const styles = {
-    container: {
-        padding: "32px",
-        fontFamily: "Arial, sans-serif",
-        color: "var(--text-color)",
-    },
+    container: { padding: "32px", fontFamily: "Arial, sans-serif" },
     card: {
-        padding: "20px",
+        padding: "16px",
         marginBottom: "24px",
         backgroundColor: "var(--card-bg)",
-        color: "var(--text-color)",
-        borderRadius: "12px",
+        borderRadius: "8px",
         border: "1px solid var(--border-color)",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.05)",
-        transition: "all 0.2s ease-in-out"
+        color: "var(--text-color)",
     },
     input: {
         width: "100%",
-        padding: "10px",
+        padding: "8px",
         marginBottom: "8px",
         backgroundColor: "var(--bg-color)",
         color: "var(--text-color)",
         border: "1px solid var(--border-color)",
-        borderRadius: "8px",
-        outline: "none"
+        borderRadius: "6px"
     },
     editButton: {
         backgroundColor: "#007bff",
         color: "white",
-        padding: "8px 16px",
+        padding: "6px 12px",
         border: "none",
-        borderRadius: "6px",
+        borderRadius: "4px",
         cursor: "pointer",
         marginTop: "8px",
-        fontWeight: "bold"
     },
     saveButton: {
         backgroundColor: "#28a745",
         color: "white",
-        padding: "8px 16px",
+        padding: "6px 12px",
         border: "none",
-        borderRadius: "6px",
+        borderRadius: "4px",
         cursor: "pointer",
         marginTop: "8px",
-        fontWeight: "bold"
-    }
+    },
 };
-
 
 export default Flashcards;
