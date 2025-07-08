@@ -34,13 +34,13 @@ const Upload = ({ roomId, onUploadSuccess }) => {
             if (!res.ok) throw new Error("Upload fehlgeschlagen");
 
             const data = await res.json();
-            setSuccessMessage(`✅ Erfolgreich verarbeitet: ${data.message}`);
+            setSuccessMessage(`Erfolgreich verarbeitet: ${data.message}`);
 
-            console.log("✅ Upload erfolgreich, callback wird aufgerufen");
+            console.log("Upload erfolgreich, callback wird aufgerufen");
             if (onUploadSuccess) onUploadSuccess();
 
         } catch (err) {
-            console.error("❌ Upload fehlgeschlagen:", err);
+            console.error("Upload fehlgeschlagen:", err);
             setError("Fehler beim Hochladen.");
         } finally {
             setUploading(false);
