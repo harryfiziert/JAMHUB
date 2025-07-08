@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 function LearnView() {
     const { roomId } = useParams();
@@ -101,7 +101,7 @@ function LearnView() {
                 justifyContent: "center",
                 alignItems: "center",
                 minHeight: "80vh",
-                backgroundColor: "var(--background-color, #1e1e1e)",
+                backgroundColor: "var(--bg-color)",
                 color: "var(--text-color, #fff)",
             }}
         >
@@ -113,7 +113,8 @@ function LearnView() {
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ duration: 0.3 }}
                     style={{
-                        backgroundColor: "#2a2a2a",
+                        backgroundColor: "var(--card-bg)",
+                        color: "var(--text-color)",
                         border: "1px solid #444",
                         borderRadius: "12px",
                         padding: "2rem",
@@ -128,7 +129,7 @@ function LearnView() {
                     {showAnswer && (
                         <>
                             <h4>Antwort</h4>
-                            <p style={{ background: "#3a3a3a", padding: "1rem", borderRadius: "8px" }}>
+                            <p style={{ backgroundColor: "var(--bg-color)", color: "var(--text-color)", padding: "1rem", borderRadius: "8px" }}>
                                 {currentCard.answer}
                             </p>
                         </>

@@ -45,7 +45,9 @@ const styles = {
     marginTop: "20px",
     padding: "16px",
     borderRadius: "12px",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--card-bg)",
+    color: "var(--text-color)",
+    border: "1px solid var(--border-color)",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
   },
   heading: {
@@ -66,7 +68,7 @@ const styles = {
   percentText: {
     fontSize: "13px",
     marginTop: "8px",
-    color: "#333",
+    color: "var(--text-color)",
   },
 };
 

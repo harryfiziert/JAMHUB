@@ -12,6 +12,7 @@ const RoomView = () => {
     const [hasFlashcards, setHasFlashcards] = useState(false);
     const [roomData, setRoomData] = useState(null);
     const navigate = useNavigate();
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         fetch(`http://localhost:8000/room/${roomId}`)
@@ -20,10 +21,7 @@ const RoomView = () => {
             .catch((err) => console.error("Fehler beim Laden des Raums:", err));
     }, [roomId]);
 
-    const [refreshKey, setRefreshKey] = useState(0);
-
     const checkFlashcards = () => {
-        console.log("checkFlashcards triggered");
         fetch(`http://localhost:8000/flashcards/by-room-and-user/${roomId}/${userId}`)
             .then((res) => res.json())
             .then((data) => {
@@ -67,39 +65,46 @@ const RoomView = () => {
 
     return (
         <div style={styles.wrapper}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 style={styles.heading}>Raum: {roomId}</h2>
-
-                {roomData && roomData.owner !== userId && (
-                    <button
-                        onClick={handleLeaveRoom}
-                        style={{
-                            backgroundColor: "#dc3545",
-                            color: "white",
-                            padding: "8px 16px",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer"
-                        }}
-                    >
-                        Raum verlassen
-                    </button>
-                )}
+            <div style={styles.headerRow}>
+                <div>
+                    <h2 style={styles.heading}>{roomData?.title || "Raum"}</h2>
+                    <p style={styles.roomId}>ID: {roomId}</p>
+                </div>
+                <div>
+                    {roomData && roomData.creator_id === userId ? (
+                        <span style={styles.ownerBadge}>Du bist Besitzer dieses Raums</span>
+                    ) : (
+                        <button onClick={handleLeaveRoom} style={styles.leaveButton}>
+                            Raum verlassen
+                        </button>
+                    )}
+                </div>
             </div>
 
             <ProgressTracker userId={userId} roomId={roomId} key={`progress-${refreshKey}`} />
+            <hr style={styles.hr} />
+
             <Upload roomId={roomId} onUploadSuccess={checkFlashcards} />
+            <hr style={styles.hr} />
+
             {hasFlashcards && (
-                <div>
-                    <button onClick={handleStartLearning}>Lernen starten</button>
-                    <button onClick={handleStartExam}>Prüfung starten</button>
-                </div>
+                <>
+                    <div style={styles.buttonRow}>
+                        <button style={styles.learnButton} onClick={handleStartLearning}>
+                            Lernen starten
+                        </button>
+                        <button style={styles.examButton} onClick={handleStartExam}>
+                            Prüfung starten
+                        </button>
+                    </div>
+                    <hr style={styles.hr} />
+                </>
             )}
+
             <Flashcards roomId={roomId} key={`flashcards-${refreshKey}`} />
+            <hr style={styles.hr} />
             <Leaderboard roomId={roomId} key={`leaderboard-${refreshKey}`} />
             <RoomDiagram roomId={roomId} refreshKey={refreshKey} />
-
-
         </div>
     );
 };
@@ -114,32 +119,68 @@ const styles = {
         borderRadius: "12px",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)",
     },
-    heading: {
+    headerRow: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: "30px",
-        fontSize: "24px",
+    },
+    heading: {
+        margin: 0,
+        fontSize: "28px",
         fontWeight: "bold",
+        color: "var(--text-color)",
+    },
+    roomId: {
+        fontSize: "14px",
+        color: "gray",
+    },
+    ownerBadge: {
+        fontSize: "14px",
+        color: "#4CAF50",
+        fontWeight: "bold"
+    },
+    leaveButton: {
+        backgroundColor: "#dc3545",
+        color: "white",
+        padding: "8px 16px",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontWeight: "bold"
+    },
+    buttonRow: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "24px",
+        marginBottom: "32px",
     },
     learnButton: {
         padding: "10px 20px",
         backgroundColor: "#4CAF50",
         color: "white",
         border: "none",
-        borderRadius: "5px",
+        borderRadius: "8px",
         cursor: "pointer",
         fontSize: "16px",
+        fontWeight: "bold",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)"
     },
     examButton: {
         padding: "10px 20px",
         backgroundColor: "#007bff",
         color: "white",
         border: "none",
-        borderRadius: "5px",
+        borderRadius: "8px",
         cursor: "pointer",
         fontSize: "16px",
+        fontWeight: "bold",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)"
     },
     hr: {
         margin: "40px 0",
-        borderColor: "var(--border-color)",
+        border: "none",
+        borderTop: "1px solid var(--border-color)"
     }
 };
 

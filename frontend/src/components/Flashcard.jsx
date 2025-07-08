@@ -141,7 +141,7 @@ const Flashcards = ({ roomId }) => {
                                     style={styles.input}
                                 />
                                 <button onClick={() => handleSave(card._id)} style={styles.saveButton}>
-                                    💾 Speichern
+                                    Speichern
                                 </button>
                             </>
                         ) : (
@@ -149,7 +149,7 @@ const Flashcards = ({ roomId }) => {
                                 <p><strong>Q:</strong> {card.question}</p>
                                 <p><strong>A:</strong> {card.answer}</p>
                                 <button onClick={() => handleEditClick(card)} style={styles.editButton}>
-                                    📝 Bearbeiten
+                                    Bearbeiten
                                 </button>
                             </>
                         )}
@@ -181,37 +181,52 @@ const Flashcards = ({ roomId }) => {
 };
 
 const styles = {
-    container: { padding: "32px", fontFamily: "Arial, sans-serif" },
+    container: {
+        padding: "32px",
+        fontFamily: "Arial, sans-serif",
+        color: "var(--text-color)",
+    },
     card: {
-        padding: "16px",
+        padding: "20px",
         marginBottom: "24px",
-        backgroundColor: "#fff",
-        borderRadius: "8px",
-        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+        backgroundColor: "var(--card-bg)",
+        color: "var(--text-color)",
+        borderRadius: "12px",
+        border: "1px solid var(--border-color)",
+        boxShadow: "0 4px 8px rgba(0,0,0,0.05)",
+        transition: "all 0.2s ease-in-out"
     },
     input: {
         width: "100%",
-        padding: "8px",
+        padding: "10px",
         marginBottom: "8px",
+        backgroundColor: "var(--bg-color)",
+        color: "var(--text-color)",
+        border: "1px solid var(--border-color)",
+        borderRadius: "8px",
+        outline: "none"
     },
     editButton: {
         backgroundColor: "#007bff",
         color: "white",
-        padding: "6px 12px",
+        padding: "8px 16px",
         border: "none",
-        borderRadius: "4px",
+        borderRadius: "6px",
         cursor: "pointer",
         marginTop: "8px",
+        fontWeight: "bold"
     },
     saveButton: {
         backgroundColor: "#28a745",
         color: "white",
-        padding: "6px 12px",
+        padding: "8px 16px",
         border: "none",
-        borderRadius: "4px",
+        borderRadius: "6px",
         cursor: "pointer",
         marginTop: "8px",
-    },
+        fontWeight: "bold"
+    }
 };
+
 
 export default Flashcards;
