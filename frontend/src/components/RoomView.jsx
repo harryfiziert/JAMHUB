@@ -63,6 +63,27 @@ const RoomView = () => {
         }
     };
 
+    const handleResetProgress = async () => {
+        if (!window.confirm("Willst du deinen Lernfortschritt wirklich zurücksetzen?")) return;
+
+        try {
+            const res = await fetch(`http://localhost:8000/flashcards/reset-progress/${roomId}/${userId}`, {
+                method: "POST"
+            });
+
+            if (res.ok) {
+                alert("Lernfortschritt wurde zurückgesetzt.");
+                setRefreshKey(prev => prev + 1); // lädt Tracker & Flashcards neu
+            } else {
+                alert("Fehler beim Zurücksetzen.");
+            }
+        } catch (error) {
+            console.error("Fehler:", error);
+            alert("Verbindungsfehler.");
+        }
+    };
+
+
     return (
         <div style={styles.wrapper}>
             <div style={styles.headerRow}>
@@ -96,15 +117,32 @@ const RoomView = () => {
                         <button style={styles.examButton} onClick={handleStartExam}>
                             Prüfung starten
                         </button>
+                        <button
+                            style={{
+                                padding: "10px 20px",
+                                backgroundColor: "#6c757d",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                                marginTop: "8px"
+                            }}
+                            onClick={handleResetProgress}
+                        >
+                            Lernfortschritt zurücksetzen
+                        </button>
+
                     </div>
-                    <hr style={styles.hr} />
+                    <hr style={styles.hr}/>
                 </>
             )}
 
-            <Flashcards roomId={roomId} key={`flashcards-${refreshKey}`} />
-            <hr style={styles.hr} />
-            <Leaderboard roomId={roomId} key={`leaderboard-${refreshKey}`} />
-            <RoomDiagram roomId={roomId} refreshKey={refreshKey} />
+            <Flashcards roomId={roomId} key={`flashcards-${refreshKey}`}/>
+            <hr style={styles.hr}/>
+            <Leaderboard roomId={roomId} key={`leaderboard-${refreshKey}`}/>
+            <RoomDiagram roomId={roomId} refreshKey={refreshKey}/>
         </div>
     );
 };
