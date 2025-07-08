@@ -128,7 +128,7 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                             copied["_id"] = ObjectId()
                             copied["original_id"] = str(result.inserted_id)
                             collection.insert_one(copied)
-                            print(f"➡️ Karte verteilt an User {uid} (Kopie von {creator_card['_id']})")
+                            print(f"Karte verteilt an User {uid} (Kopie von {creator_card['_id']})")
 
         except Exception as e:
             print("GPT-Fehler:", e)
@@ -179,15 +179,6 @@ async def generate_flashcards_from_pdf(file: UploadFile = File(...), user_id: st
                             print(f"Dummy-Karte verteilt an User {uid} (Kopie von {card['_id']})")
 
     return {"message": "PDF verarbeitet", "cards": created}
-
-
-
-# @router.get("/flashcards")
-# def get_all_flashcards():
-#     cards = list(collection.find())
-#     for card in cards:
-#         card["_id"] = str(card["_id"])
-#     return cards
 
 
 @router.get("/flashcard/{id}")

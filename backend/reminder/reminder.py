@@ -29,7 +29,7 @@ def send_reminder_email(to_email, room_statuses):
 
     with smtplib.SMTP(os.getenv("SMTP_HOST"), int(os.getenv("SMTP_PORT"))) as smtp:
         smtp.send_message(msg)
-        print(f"📬 Reminder verschickt an: {to_email}")
+        print(f"Reminder verschickt an: {to_email}")
 
 
 def send_reminders():
@@ -40,19 +40,19 @@ def send_reminders():
     print("📣 Reminder check gestartet...")
 
     user_ids = [uid for uid in flashcards.distinct("user_id") if uid and uid != "null"]
-    print(f"👤 Gefundene User IDs: {user_ids}")
+    print(f"Gefundene User IDs: {user_ids}")
 
     for user_id in user_ids:
         print(f"→ Prüfe User {user_id}")
         try:
             object_id = ObjectId(user_id)
         except Exception as e:
-            print(f"⚠️ Ungültige ObjectId: {user_id} – {e}")
+            print(f"⚠Ungültige ObjectId: {user_id} – {e}")
             continue
 
         user = users.find_one({"_id": object_id})
         if not user or "email" not in user:
-            print(f"⚠️ Kein gültiger User mit ID {user_id}")
+            print(f"Kein gültiger User mit ID {user_id}")
             continue
 
         print(f"→→ Räume für User {user_id}")
@@ -73,5 +73,5 @@ def send_reminders():
                 })
 
         if room_statuses:
-            print(f"📧 Reminder wird gesendet an {user['email']}")
+            print(f"Reminder wird gesendet an {user['email']}")
             send_reminder_email(user["email"], room_statuses)
